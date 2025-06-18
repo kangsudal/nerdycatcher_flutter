@@ -32,38 +32,48 @@ final sensorDataStreamProvider = StreamProvider<SensorData>((ref) {
 // 3. 각 센서 값 (온도, 습도, 조도) 스트림 프로바이더
 // SensorData 스트림에서 필요한 값만 추출하여 제공합니다.
 final temperatureStreamProvider = StreamProvider<double>((ref) {
-  return ref.watch(sensorDataStreamProvider).when(
-    data: (data) => Stream.value(data.temperature),
-    loading: () => const Stream.empty(),
-    error: (err, stack) => Stream.error(err), // 에러 스트림으로 전달
-  );
+  return ref
+      .watch(sensorDataStreamProvider)
+      .when(
+        data: (data) => Stream.value(data.temperature),
+        loading: () => const Stream.empty(),
+        error: (err, stack) => Stream.error(err), // 에러 스트림으로 전달
+      );
 });
 
 final humidityStreamProvider = StreamProvider<double>((ref) {
-  return ref.watch(sensorDataStreamProvider).when(
-    data: (data) => Stream.value(data.humidity),
-    loading: () => const Stream.empty(),
-    error: (err, stack) => Stream.error(err),
-  );
+  return ref
+      .watch(sensorDataStreamProvider)
+      .when(
+        data: (data) => Stream.value(data.humidity),
+        loading: () => const Stream.empty(),
+        error: (err, stack) => Stream.error(err),
+      );
 });
 
 final lightLevelStreamProvider = StreamProvider<int>((ref) {
-  return ref.watch(sensorDataStreamProvider).when(
-    data: (data) => Stream.value(data.lightLevel),
-    loading: () => const Stream.empty(),
-    error: (err, stack) => Stream.error(err),
-  );
+  return ref
+      .watch(sensorDataStreamProvider)
+      .when(
+        data: (data) => Stream.value(data.lightLevel),
+        loading: () => const Stream.empty(),
+        error: (err, stack) => Stream.error(err),
+      );
 });
 
-
-// 4. 차트 데이터를 관리하는 StateNotifier
+// 4. 차트 데이터를 관리하는 Notifier
 // FlSpot은 x, y 값을 가지며, x축은 시간(millisecondsSinceEpoch)으로 사용합니다.
-class ChartDataNotifier extends StateNotifier<List<FlSpot>> {
-  ChartDataNotifier() : super([]);
-
+abstract class BaseChartDataNotifier extends Notifier<List<FlSpot>> {
   // 최대 저장 데이터 포인트 수
   static const int maxDataPoints = 20;
 
+  @override
+  List<FlSpot> build() {
+    // 초기 상태
+    return [];
+  }
+
+  // 데이터 추가 로직은 동일하므로 여기에 정의
   void add(double value, DateTime timestamp) {
     final newSpot = FlSpot(timestamp.millisecondsSinceEpoch.toDouble(), value);
 
@@ -75,45 +85,96 @@ class ChartDataNotifier extends StateNotifier<List<FlSpot>> {
       state = [...state, newSpot];
     }
   }
+
+  // 각 Notifier가 어떤 스트림을 들을지 정의하는 추상 메서드 (강제 구현)
+  void listenToStream(Ref ref);
 }
 
-// 5. 각 센서별 차트 데이터 프로바이더
-// 각 센서 스트림의 변화를 감지하여 차트 데이터 Notifier를 업데이트합니다.
-final temperatureChartDataProvider = StateNotifierProvider<ChartDataNotifier, List<FlSpot>>((ref) {
-  final notifier = ChartDataNotifier();
-  ref.listen<AsyncValue<SensorData>>( // 전체 SensorData 스트림을 listen
-    sensorDataStreamProvider,
-        (previous, next) {
-      next.whenData((sensorData) {
-        notifier.add(sensorData.temperature, sensorData.timestamp);
-      });
-    },
-  );
-  return notifier;
-});
+// 5. 각 센서별 차트 데이터 프로바이더 (NotifierProvider로 변경)
 
-final humidityChartDataProvider = StateNotifierProvider<ChartDataNotifier, List<FlSpot>>((ref) {
-  final notifier = ChartDataNotifier();
-  ref.listen<AsyncValue<SensorData>>(
-    sensorDataStreamProvider,
-        (previous, next) {
-      next.whenData((sensorData) {
-        notifier.add(sensorData.humidity, sensorData.timestamp);
-      });
-    },
-  );
-  return notifier;
-});
+// 온도 차트 데이터 Notifier
+final temperatureChartDataProvider =
+    NotifierProvider<TemperatureChartDataNotifier, List<FlSpot>>(
+      TemperatureChartDataNotifier.new,
+    );
 
-final lightLevelChartDataProvider = StateNotifierProvider<ChartDataNotifier, List<FlSpot>>((ref) {
-  final notifier = ChartDataNotifier();
-  ref.listen<AsyncValue<SensorData>>(
-    sensorDataStreamProvider,
-        (previous, next) {
-      next.whenData((sensorData) {
-        notifier.add(sensorData.lightLevel.toDouble(), sensorData.timestamp); // int를 double로 변환
+class TemperatureChartDataNotifier extends BaseChartDataNotifier {
+  @override
+  List<FlSpot> build() {
+    final initialState = super.build(); // 부모의 build 호출 (빈 리스트 반환)
+    listenToStream(ref); // 이 Notifier가 어떤 스트림을 들을지 설정
+    return initialState;
+  }
+
+  @override
+  void listenToStream(Ref ref) {
+    ref.listen<AsyncValue<double>>(temperatureStreamProvider, (previous, next) {
+      next.whenData((dataValue) {
+        final currentSensorData = ref.read(sensorDataStreamProvider).value;
+        if (currentSensorData != null) {
+          add(dataValue, currentSensorData.timestamp);
+        } else {
+          add(dataValue, DateTime.now());
+        }
       });
-    },
-  );
-  return notifier;
-});
+    });
+  }
+}
+
+// 습도 차트 데이터 Notifier
+final humidityChartDataProvider =
+    NotifierProvider<HumidityChartDataNotifier, List<FlSpot>>(
+      HumidityChartDataNotifier.new,
+    );
+
+class HumidityChartDataNotifier extends BaseChartDataNotifier {
+  @override
+  List<FlSpot> build() {
+    final initialState = super.build();
+    listenToStream(ref);
+    return initialState;
+  }
+
+  @override
+  void listenToStream(Ref ref) {
+    ref.listen<AsyncValue<double>>(humidityStreamProvider, (previous, next) {
+      next.whenData((dataValue) {
+        final currentSensorData = ref.read(sensorDataStreamProvider).value;
+        if (currentSensorData != null) {
+          add(dataValue, currentSensorData.timestamp);
+        } else {
+          add(dataValue, DateTime.now());
+        }
+      });
+    });
+  }
+}
+
+// 조도 차트 데이터 Notifier
+final lightLevelChartDataProvider =
+    NotifierProvider<LightLevelChartDataNotifier, List<FlSpot>>(
+      LightLevelChartDataNotifier.new,
+    );
+
+class LightLevelChartDataNotifier extends BaseChartDataNotifier {
+  @override
+  List<FlSpot> build() {
+    final initialState = super.build();
+    listenToStream(ref);
+    return initialState;
+  }
+
+  @override
+  void listenToStream(Ref ref) {
+    ref.listen<AsyncValue<int>>(lightLevelStreamProvider, (previous, next) {
+      next.whenData((dataValue) {
+        final currentSensorData = ref.read(sensorDataStreamProvider).value;
+        if (currentSensorData != null) {
+          add(dataValue.toDouble(), currentSensorData.timestamp);
+        } else {
+          add(dataValue.toDouble(), DateTime.now());
+        }
+      });
+    });
+  }
+}
