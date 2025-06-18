@@ -55,7 +55,7 @@ class DashboardPage extends ConsumerWidget {
                   title: '조도 변화',
                   unit: 'Lux', // 또는 'ADC Value'
                   minY: 0,   // 작물에 맞는 최소/최대값으로 조정
-                  maxY: 1000,
+                  maxY: 5000,
                   lineColor: Colors.orangeAccent,
                 ),
                 // --- DLI (적산광량) 계산 및 표시 영역 (개념적) ---
