@@ -1,8 +1,10 @@
 // lib/pages/dashboard_page.dart
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 import 'package:nerdycatcher_flutter/providers/sensor_providers.dart'; // providers 폴더 임포트
 import 'package:nerdycatcher_flutter/pages/widgets/sensor_line_chart.dart'; // widgets 폴더 임포트
 import 'package:nerdycatcher_flutter/data/models/sensor_data.dart'; // models 폴더 임포트
@@ -12,7 +14,9 @@ class DashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 모든 센서 데이터를 하나의 AsyncValue로 감시
-    final AsyncValue<SensorData> sensorDataAsync = ref.watch(sensorDataStreamProvider);
+    final AsyncValue<SensorData> sensorDataAsync = ref.watch(
+      sensorDataStreamProvider,
+    );
 
     // 각 차트 데이터 프로바이더 감시
     final List<FlSpot> tempChartData = ref.watch(temperatureChartDataProvider);
@@ -20,10 +24,7 @@ class DashboardPage extends ConsumerWidget {
     final List<FlSpot> lightChartData = ref.watch(lightLevelChartDataProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Nerdycatcher Dashboard'),
-        centerTitle: true,
-      ),
+      appBar: DefaultAppBar(),
       body: sensorDataAsync.when(
         data: (data) {
           // 데이터가 있을 때만 내용 표시
@@ -32,13 +33,33 @@ class DashboardPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/sample_plants/basil.png',
+                      width: 90,
+                    ),
+                    Text(
+                      '바질',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.mark_email_unread_outlined),
+                    ),
+                  ],
+                ),
                 _buildCurrentDataCard(context, data), // context 전달
                 const SizedBox(height: 20),
                 SensorLineChart(
                   data: tempChartData,
                   title: '온도 변화',
                   unit: '°C',
-                  minY: 10, // 작물에 맞는 최소/최대값으로 조정
+                  minY: 10,
+                  // 작물에 맞는 최소/최대값으로 조정
                   maxY: 35,
                   lineColor: Colors.redAccent,
                 ),
@@ -46,15 +67,18 @@ class DashboardPage extends ConsumerWidget {
                   data: humidChartData,
                   title: '습도 변화',
                   unit: '%',
-                  minY: 30, // 작물에 맞는 최소/최대값으로 조정
+                  minY: 30,
+                  // 작물에 맞는 최소/최대값으로 조정
                   maxY: 90,
                   lineColor: Colors.blueAccent,
                 ),
                 SensorLineChart(
                   data: lightChartData,
                   title: '조도 변화',
-                  unit: 'Lux', // 또는 'ADC Value'
-                  minY: 0,   // 작물에 맞는 최소/최대값으로 조정
+                  unit: 'Lux',
+                  // 또는 'ADC Value'
+                  minY: 0,
+                  // 작물에 맞는 최소/최대값으로 조정
                   maxY: 5000,
                   lineColor: Colors.orangeAccent,
                 ),
@@ -70,12 +94,31 @@ class DashboardPage extends ConsumerWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
+                Row(
+                  children: [
+                    Text('조도가 낮을 시 LED 자동 켜기'),
+                    SizedBox(width: 8),
+                    SizedBox(
+                      width: 40,
+                      child: FittedBox(
+                        fit: BoxFit.contain,
+                        child: CupertinoSwitch(
+                          value: true,
+                          onChanged: (value) {},
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 50),
               ],
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('데이터 로딩 오류: $err\nStack: $stack')),
+        error:
+            (err, stack) =>
+                Center(child: Text('데이터 로딩 오류: $err\nStack: $stack')),
       ),
     );
   }
@@ -90,13 +133,32 @@ class DashboardPage extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('현재 센서 데이터', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
+            Text(
+              '현재',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const Divider(height: 20, thickness: 1),
-            _buildDataRow('온도', '${data.temperature.toStringAsFixed(1)} °C', Icons.thermostat_outlined),
-            _buildDataRow('습도', '${data.humidity.toStringAsFixed(1)} %', Icons.water_drop_outlined),
-            _buildDataRow('조도', '${data.lightLevel} Lux', Icons.light_mode_outlined),
+            _buildDataRow(
+              '온도',
+              '${data.temperature.toStringAsFixed(1)} °C',
+              Icons.thermostat_outlined,
+            ),
+            _buildDataRow(
+              '습도',
+              '${data.humidity.toStringAsFixed(1)} %',
+              Icons.water_drop_outlined,
+            ),
+            _buildDataRow(
+              '조도',
+              '${data.lightLevel} Lux',
+              Icons.light_mode_outlined,
+            ),
             _buildDataRow('식물 ID', '${data.plantId}', Icons.grass_outlined),
-            _buildDataRow('수신 시간', DateFormat('yyyy-MM-dd HH:mm:ss').format(data.timestamp), Icons.access_time_outlined),
+            _buildDataRow(
+              '수신 시간',
+              DateFormat('yyyy-MM-dd HH:mm:ss').format(data.timestamp),
+              Icons.access_time_outlined,
+            ),
           ],
         ),
       ),
@@ -111,9 +173,17 @@ class DashboardPage extends ConsumerWidget {
         children: [
           Icon(icon, color: Colors.grey[700]),
           const SizedBox(width: 10),
-          Text('$label: ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Expanded( // 텍스트가 길어질 경우를 대비해 Expanded
-            child: Text(value, style: TextStyle(fontSize: 18, color: Colors.blueGrey[700]), softWrap: true),
+          Text(
+            '$label: ',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            // 텍스트가 길어질 경우를 대비해 Expanded
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 18, color: Colors.blueGrey[700]),
+              softWrap: true,
+            ),
           ),
         ],
       ),

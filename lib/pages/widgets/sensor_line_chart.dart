@@ -79,77 +79,70 @@ class SensorLineChart extends StatelessWidget {
       );
     }
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  minX: data.isNotEmpty ? data.first.x : 0,
-                  // 데이터가 없으면 0으로 설정
-                  maxX: data.isNotEmpty ? data.last.x : 1,
-                  // 데이터가 없으면 1로 설정
-                  minY: minY,
-                  maxY: maxY,
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(sideTitles: getBottomTitles()),
-                    leftTitles: AxisTitles(sideTitles: getLeftTitles()),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 200,
+            child: LineChart(
+              LineChartData(
+                minX: data.isNotEmpty ? data.first.x : 0,
+                // 데이터가 없으면 0으로 설정
+                maxX: data.isNotEmpty ? data.last.x : 1,
+                // 데이터가 없으면 1로 설정
+                minY: minY,
+                maxY: maxY,
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(sideTitles: getBottomTitles()),
+                  leftTitles: AxisTitles(sideTitles: getLeftTitles()),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
                   ),
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: true,
-                    getDrawingHorizontalLine:
-                        (value) => FlLine(
-                          color: const Color(0xff37434d),
-                          strokeWidth: 0.5,
-                        ),
-                    getDrawingVerticalLine:
-                        (value) => FlLine(
-                          color: const Color(0xff37434d),
-                          strokeWidth: 0.5,
-                        ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
                   ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(
-                      color: const Color(0xff37434d),
-                      width: 1,
-                    ),
-                  ),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: data,
-                      isCurved: true,
-                      color: lineColor,
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
                 ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  getDrawingHorizontalLine:
+                      (value) => FlLine(
+                        color: const Color(0xff37434d),
+                        strokeWidth: 0.5,
+                      ),
+                  getDrawingVerticalLine:
+                      (value) => FlLine(
+                        color: const Color(0xff37434d),
+                        strokeWidth: 0.5,
+                      ),
+                ),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border.all(color: const Color(0xff37434d), width: 1),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: data,
+                    isCurved: true,
+                    color: lineColor,
+                    barWidth: 2,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(show: false),
+                    belowBarData: BarAreaData(show: false),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
