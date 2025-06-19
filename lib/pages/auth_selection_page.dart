@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nerdycatcher_flutter/other/routes/route_names.dart';
 import 'package:nerdycatcher_flutter/pages/dashboard_page.dart';
 
 class AuthSelectionPage extends StatelessWidget {
@@ -43,14 +45,7 @@ class AuthSelectionPage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) {
-                      return DashboardPage();
-                    },
-                  ),
-                );
+                context.goNamed(RouteNames.signin);
               },
               color: Colors.black,
             ),

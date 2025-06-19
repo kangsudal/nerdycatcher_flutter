@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -21,40 +22,19 @@ class _SigninPageState extends ConsumerState<SigninPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 50,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 50),
         child: Form(
           key: formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Spacer(),
-              Text('당신의 건강 도우미'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '리터러시',
-                    style: TextStyle(
-                      fontSize: 35,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    child: Text(
-                      'K',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                'Nerdy Catcher',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 60),
+                textAlign: TextAlign.center,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 36),
               TextFormField(
                 decoration: InputDecoration(
                   labelText: '이메일',
@@ -87,8 +67,8 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                     return '비밀번호를 입력하세요';
                   }
                   if (!RegExp(
-                      r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$')
-                      .hasMatch(value)) {
+                    r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
+                  ).hasMatch(value)) {
                     return '영문자, 숫자, 특수문자를 포함하여 최소 8자 이상이어야 합니다';
                   }
                   return null;
@@ -102,20 +82,23 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                 children: [
                   TextButton(
                     onPressed: () async {
-                      try{
+                      try {
                         context.goNamed(RouteNames.resetPassword);
-                      }catch(e){
+                      } catch (e) {
                         debugPrint('tap');
-
                       }
                     },
-                    child: Text('비밀번호 재설정하기'),
-                  )
+                    child: Text(
+                      '비밀번호 재설정하기',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
                 ],
               ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: CupertinoButton(
+                  color: Colors.black,
                   onPressed: () async {
                     // final signinViewmodel =
                     // ref.read(signinViewmodelProvider.notifier);
@@ -131,17 +114,11 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                     //       .showSnackBar(SnackBar(content: Text(e.message)));
                     // }
                   },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
                   child: Text(
                     '로그인',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -152,13 +129,25 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                   Text('계정이 없으신가요? '),
                   TextButton(
                     style: ButtonStyle(
-                      padding:
-                      WidgetStateProperty.all<EdgeInsets>(EdgeInsets.zero),
+                      padding: WidgetStateProperty.all<EdgeInsets>(
+                        EdgeInsets.zero,
+                      ),
                     ),
                     onPressed: () {
                       context.goNamed(RouteNames.signup);
                     },
-                    child: Text(' 회원가입 하기'),
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        border: Border(bottom: BorderSide()),
+                      ),
+                      child: Text(
+                        ' 회원가입 하기',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
