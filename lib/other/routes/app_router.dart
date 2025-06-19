@@ -3,6 +3,7 @@ import 'package:nerdycatcher_flutter/other/routes/route_names.dart';
 import 'package:nerdycatcher_flutter/pages/auth_selection_page.dart';
 import 'package:nerdycatcher_flutter/pages/dashboard_page.dart';
 import 'package:nerdycatcher_flutter/pages/home_page.dart';
+import 'package:nerdycatcher_flutter/pages/notification_setting_page.dart';
 import 'package:nerdycatcher_flutter/pages/signin_page.dart';
 import 'package:nerdycatcher_flutter/pages/splash_page.dart';
 
@@ -33,6 +34,11 @@ final GoRouter appRouter = GoRouter(
       name: RouteNames.dashboard,
       path: '/dashboard',
       builder: (context, state) => DashboardPage(),
+    ),
+    GoRoute(
+      name: RouteNames.notificationSetting,
+      path: '/notificationSetting',
+      builder: (context, state) => NotificationSettingPage(),
     ),
     // GoRoute(
     //   name: RouteNames.settings,

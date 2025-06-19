@@ -10,4 +10,5 @@ abstract class RouteNames {
   static const resetPassword = 'resetPassword';
   static const splash = 'splash';
   static const home = 'home';
+  static const notificationSetting = 'notificationSetting';
 }

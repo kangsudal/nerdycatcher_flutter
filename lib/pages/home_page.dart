@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,16 +28,21 @@ class _HomePageState extends State<HomePage> {
 안녕.
 혹시 너도, 작은 씨앗 하나 심어볼래?
 내가 지켜볼게.
-''',style: TextStyle(fontSize: 17),),
+''', style: TextStyle(fontSize: 17)),
                 SizedBox(height: 20),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.8,
                   child: Wrap(
                     alignment: WrapAlignment.center,
                     children: [
-                      CustomCard(
-                        imagePath: 'assets/images/sample_plants/basil.png',
-                        plantName: '바질',
+                      GestureDetector(
+                        child: CustomCard(
+                          imagePath: 'assets/images/sample_plants/basil.png',
+                          plantName: '바질',
+                        ),
+                        onTap: () {
+                          context.goNamed('notificationSetting');
+                        },
                       ),
                       CustomCard(
                         imagePath: 'assets/images/planting.png',
