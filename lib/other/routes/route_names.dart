@@ -9,4 +9,5 @@ abstract class RouteNames {
   static const signin = 'signin';
   static const resetPassword = 'resetPassword';
   static const splash = 'splash';
+  static const home = 'home';
 }

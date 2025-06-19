@@ -13,12 +13,12 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 2)).then((_) {
+    Future.delayed(const Duration(seconds: 1)).then((_) {
       if (!mounted) return;
-      final bool isLoggedIn = false; // TODO: 로그인 상태 확인 로직으로 바꿔야함
+      final bool isLoggedIn = true; // TODO: 로그인 상태 확인 로직으로 바꿔야함
 
       if (isLoggedIn) {
-        context.goNamed('dashboard'); // 홈 라우트 이름
+        context.goNamed('home'); // 홈 라우트 이름
       } else {
         context.goNamed('authSelection');
       }
@@ -27,17 +27,32 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Text(
-          '🌱 Nerdy Catcher',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Image.asset('assets/images/nerdy.png', height: 200),
+          Text(
+            'Nerdy',
+            style: TextStyle(
+              fontFamily: 'Intl',
+              fontSize: 50,
+              fontWeight: FontWeight.w900,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
+          Text(
+            'Catcher',
+            style: TextStyle(
+              fontFamily: 'Intl',
+              fontSize: 50,
+              fontWeight: FontWeight.w900,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

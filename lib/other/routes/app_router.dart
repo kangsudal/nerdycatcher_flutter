@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/other/routes/route_names.dart';
 import 'package:nerdycatcher_flutter/pages/auth_selection_page.dart';
 import 'package:nerdycatcher_flutter/pages/dashboard_page.dart';
+import 'package:nerdycatcher_flutter/pages/home_page.dart';
 import 'package:nerdycatcher_flutter/pages/signin_page.dart';
 import 'package:nerdycatcher_flutter/pages/splash_page.dart';
 
@@ -22,6 +23,11 @@ final GoRouter appRouter = GoRouter(
       name: RouteNames.signin,
       path: '/auth/signin',
       builder: (context, state) => SigninPage(),
+    ),
+    GoRoute(
+      name: RouteNames.home,
+      path: '/home',
+      builder: (context, state) => HomePage(),
     ),
     GoRoute(
       name: RouteNames.dashboard,

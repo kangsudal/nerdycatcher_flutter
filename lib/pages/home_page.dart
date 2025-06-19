@@ -1,0 +1,102 @@
+import 'package:flutter/material.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('''
+안녕.
+혹시 너도, 작은 씨앗 하나 심어볼래?
+내가 지켜볼게.
+'''),
+                SizedBox(height: 20),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    children: [
+                      CustomCard(
+                        imagePath: 'assets/images/sample_plants/basil.png',
+                        plantName: '바질',
+                      ),
+                      CustomCard(
+                        imagePath: 'assets/images/planting.png',
+                        plantName: '작물 추가하기',
+                        width: 60,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CustomCard extends StatelessWidget {
+  final String imagePath;
+
+  final String plantName;
+
+  final double? width;
+  final double? height;
+
+  const CustomCard({
+    super.key,
+    required this.imagePath,
+    required this.plantName,
+    this.width,
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(8),
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.25),
+            blurRadius: 10.0,
+            spreadRadius: 3.0,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      height: 180,
+      width: 120,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Image.asset(imagePath, fit: BoxFit.contain, width: width),
+          ),
+          Text(plantName, style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
