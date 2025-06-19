@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,6 +12,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: DefaultAppBar(),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
@@ -18,14 +20,14 @@ class _HomePageState extends State<HomePage> {
               minHeight: MediaQuery.of(context).size.height,
             ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.16),
                 Text('''
 안녕.
 혹시 너도, 작은 씨앗 하나 심어볼래?
 내가 지켜볼게.
-'''),
+''',style: TextStyle(fontSize: 17),),
                 SizedBox(height: 20),
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.8,

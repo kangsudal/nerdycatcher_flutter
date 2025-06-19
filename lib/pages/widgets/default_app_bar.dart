@@ -7,7 +7,7 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       actions: [
-        IconButton(onPressed: () {}, icon: Icon(Icons.account_circle)),
+        // IconButton(onPressed: () {}, icon: Icon(Icons.account_circle)),
         IconButton(onPressed: () {}, icon: Icon(Icons.tune)),
       ],
     );
