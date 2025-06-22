@@ -19,6 +19,19 @@ class ThresholdRepository {
 
   Future<void> upsertThreshold(ThresholdSetting setting) async {
     // upsert는 있으면 수정, 없으면 삽입
-    await supabase.from(table).upsert(setting.toJson());
+    await supabase.from(table).upsert(setting.toJson(), onConflict: 'plant_id');
+  }
+
+  Future<ThresholdSetting?> loadThresholdSettingValue(int plantId) async {
+    // 설정 페이지 열었을 때 기존 설정 값이 로딩
+    final response = await supabase
+        .from('threshold_settings')
+        .select()
+        .eq('plant_id', plantId)
+        .maybeSingle();
+
+    if (response == null) return null;
+
+    return ThresholdSetting.fromJson(response);
   }
 }

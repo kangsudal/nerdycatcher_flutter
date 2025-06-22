@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdycatcher_flutter/data/models/threshold_setting.dart';
+import 'package:nerdycatcher_flutter/data/repositories/threshold_repository.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 
 class NotificationSettingPage extends StatefulWidget {
@@ -11,8 +13,8 @@ class NotificationSettingPage extends StatefulWidget {
 }
 
 class _NotificationSettingPageState extends State<NotificationSettingPage> {
-  // plant_id는 임시로 1 고정
-  final int plantId = 1;
+  // plant_id는 임시로 1 고정. ESP32 기기 개수를 추후에 추가하면 각자 고유 번호 부여하는 코드로 수정할 예정.
+  final int plantId = 1; // selectedPlant!.id로 대체가능하도록 향후 개발할 예정
 
   // 각 항목 컨트롤러
   final temperatureMaxController = TextEditingController();
@@ -21,6 +23,12 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
   final humidityMinController = TextEditingController();
   final lightMaxController = TextEditingController();
   final lightMinController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    loadThresholdSettingValue();
+  }
 
   @override
   void dispose() {
@@ -102,7 +110,29 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
                     child: CupertinoButton(
                       color: Colors.black,
                       child: Text('저장', style: TextStyle(color: Colors.white)),
-                      onPressed: () {},
+                      onPressed: () async {
+                        final repo = ThresholdRepository();
+                        final setting = ThresholdSetting(
+                          plantId: plantId,
+                          temperatureMin: double.parse(
+                            temperatureMinController.text,
+                          ),
+                          temperatureMax: double.parse(
+                            temperatureMaxController.text,
+                          ),
+                          humidityMin: double.parse(humidityMinController.text),
+                          humidityMax: double.parse(humidityMaxController.text),
+                          lightMin: double.parse(lightMinController.text),
+                          lightMax: double.parse(lightMaxController.text),
+                        );
+
+                        await repo.upsertThreshold(setting);
+
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text('임계값이 저장되었습니다')));
+                      },
                     ),
                   ),
                 ],
@@ -112,6 +142,26 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
         ),
       ),
     );
+  }
+
+  Future<void> loadThresholdSettingValue() async {
+    //설정 페이지 열었을 때 기존 설정 값이 자동으로 텍스트필드에 세팅
+    final repo = ThresholdRepository();
+    final setting = await repo.loadThresholdSettingValue(plantId);
+
+    if (setting != null) {
+      temperatureMinController.text = setting.temperatureMin.toString();
+      temperatureMaxController.text = setting.temperatureMax.toString();
+      humidityMinController.text = setting.humidityMin.toString();
+      humidityMaxController.text = setting.humidityMax.toString();
+      lightMinController.text = setting.lightMin.toString();
+      lightMaxController.text = setting.lightMax.toString();
+      print(
+        'setting.temperatureMin.toString():${setting.temperatureMin.toString()}',
+      );
+    } else {
+      print('ddd');
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 class ThresholdSetting {
-  final int id;
+  final int? id; //nullable로 변경한 이유는 insert할 때 id를 모르고, Supabase가 자동 생성해 주기 때문
   final int plantId;
   final double temperatureMin;
   final double temperatureMax;
@@ -9,7 +9,7 @@ class ThresholdSetting {
   final double lightMax;
 
   ThresholdSetting({
-    required this.id,
+    this.id,
     required this.plantId,
     required this.temperatureMin,
     required this.temperatureMax,
@@ -34,7 +34,7 @@ class ThresholdSetting {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      if (id != null) 'id': id,
       'plant_id': plantId,
       'temperature_min': temperatureMin,
       'temperature_max': temperatureMax,
