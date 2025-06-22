@@ -11,4 +11,5 @@ abstract class RouteNames {
   static const splash = 'splash';
   static const home = 'home';
   static const notificationSetting = 'notificationSetting';
+  static const plantCreate = 'plantCreate';
 }

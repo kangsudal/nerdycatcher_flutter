@@ -45,7 +45,7 @@ class AuthSelectionPage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                context.goNamed(RouteNames.signin);
+                context.pushNamed(RouteNames.signin);
               },
               color: Colors.black,
             ),

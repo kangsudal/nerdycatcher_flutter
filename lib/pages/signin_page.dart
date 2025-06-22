@@ -83,7 +83,7 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                   TextButton(
                     onPressed: () async {
                       try {
-                        context.goNamed(RouteNames.resetPassword);
+                        context.pushNamed(RouteNames.resetPassword);
                       } catch (e) {
                         debugPrint('tap');
                       }
@@ -134,7 +134,7 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                       ),
                     ),
                     onPressed: () {
-                      context.goNamed(RouteNames.signup);
+                      context.pushNamed(RouteNames.signup);
                     },
                     child: DecoratedBox(
                       decoration: const BoxDecoration(

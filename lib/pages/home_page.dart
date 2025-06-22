@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nerdycatcher_flutter/data/models/plant.dart';
+import 'package:nerdycatcher_flutter/data/repositories/plant_repository.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,46 +15,109 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DefaultAppBar(),
+      appBar: DefaultAppBar(hasBack: false),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: MediaQuery.of(context).size.height,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: MediaQuery.of(context).size.height * 0.16),
-                Text('''
+            child: FutureBuilder<List<Plant>>(
+              future: PlantRepository().fetchPlants(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                }
+                ;
+                if (snapshot.hasData && snapshot.data!.isEmpty) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.16,
+                      ),
+                      Text('''
 안녕.
 혹시 너도, 작은 씨앗 하나 심어볼래?
 내가 지켜볼게.
 ''', style: TextStyle(fontSize: 17)),
-                SizedBox(height: 20),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    children: [
-                      GestureDetector(
-                        child: CustomCard(
-                          imagePath: 'assets/images/sample_plants/basil.png',
-                          plantName: '바질',
+                      SizedBox(height: 20),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          children: [
+                            // GestureDetector(
+                            //   child: CustomCard(
+                            //     imagePath: 'assets/images/sample_plants/basil.png',
+                            //     plantName: '바질',
+                            //   ),
+                            //   onTap: () {
+                            //     context.pushNamed('notificationSetting');
+                            //   },
+                            // ),
+                            GestureDetector(
+                              child: CustomCard(
+                                imagePath: 'assets/images/planting.png',
+                                plantName: '작물 추가하기',
+                                width: 60,
+                              ),
+                              onTap: () {
+                                context.pushNamed('plantCreate');
+                              },
+                            ),
+                          ],
                         ),
-                        onTap: () {
-                          context.goNamed('notificationSetting');
-                        },
-                      ),
-                      CustomCard(
-                        imagePath: 'assets/images/planting.png',
-                        plantName: '작물 추가하기',
-                        width: 60,
                       ),
                     ],
-                  ),
-                ),
-              ],
+                  );
+                }
+                if (snapshot.hasError) {
+                  return Text('작물 정보를 불러오지 못했습니다');
+                }
+
+                final plants = snapshot.data!;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.16),
+                    Text('''
+안녕.
+혹시 너도, 작은 씨앗 하나 심어볼래?
+내가 지켜볼게.
+''', style: TextStyle(fontSize: 17)),
+                    SizedBox(height: 20),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          for (final plant in plants)
+                            GestureDetector(
+                              onTap: () {
+                                context.pushNamed('dashboard', extra: plant.id);
+                              },
+                              child: CustomCard(
+                                imagePath: plant.imagePath,
+                                plantName: plant.name,
+                              ),
+                            ),
+                          GestureDetector(
+                            onTap: () {
+                              context.pushNamed('plantCreate');
+                            },
+                            child: CustomCard(
+                              imagePath: 'assets/images/planting.png',
+                              plantName: '작물 추가하기',
+                              width: 60,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

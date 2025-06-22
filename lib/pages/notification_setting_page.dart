@@ -45,7 +45,7 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DefaultAppBar(),
+      appBar: DefaultAppBar(hasBack: true),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(

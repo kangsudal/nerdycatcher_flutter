@@ -1,5 +1,7 @@
 // lib/pages/dashboard_page.dart
 
+import 'dart:async';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,22 +13,34 @@ import 'package:nerdycatcher_flutter/data/models/sensor_data.dart'; // models �
 import 'package:intl/intl.dart'; // DateFormat 사용
 
 class DashboardPage extends ConsumerWidget {
+  final int plantId;
+
+  const DashboardPage({super.key, required this.plantId});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 모든 센서 데이터를 하나의 AsyncValue로 감시
-    final AsyncValue<SensorData> sensorDataAsync = ref.watch(
-      sensorDataStreamProvider,
+    final AsyncValue<SensorData?> sensorDataAsync = ref.watch(
+      sensorDataStreamProvider(plantId),
     );
 
     // 각 차트 데이터 프로바이더 감시
-    final List<FlSpot> tempChartData = ref.watch(temperatureChartDataProvider);
-    final List<FlSpot> humidChartData = ref.watch(humidityChartDataProvider);
-    final List<FlSpot> lightChartData = ref.watch(lightLevelChartDataProvider);
+    final List<FlSpot> tempChartData = ref.watch(
+      temperatureChartDataProvider(plantId),
+    );
+    final List<FlSpot> humidChartData = ref.watch(
+      humidityChartDataProvider(plantId),
+    );
+    final List<FlSpot> lightChartData = ref.watch(
+      lightLevelChartDataProvider(plantId),
+    );
 
     return Scaffold(
-      appBar: DefaultAppBar(),
+      appBar: DefaultAppBar(hasBack: true),
       body: sensorDataAsync.when(
         data: (data) {
+          if (data == null) {
+            return Center(child: Text('해당 파수꾼과 연결되지 않았습니다.'));
+          }
           // 데이터가 있을 때만 내용 표시
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -116,9 +130,12 @@ class DashboardPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (err, stack) =>
-                Center(child: Text('데이터 로딩 오류: $err\nStack: $stack')),
+        error: (err, stack) {
+          if (err is TimeoutException) {
+            return Center(child: Text('해당 파수꾼과 연결되지 않았습니다.(plantId:$plantId)'));
+          }
+          return Center(child: Text('❌ 알 수 없는 에러 발생: $err'));
+        },
       ),
     );
   }

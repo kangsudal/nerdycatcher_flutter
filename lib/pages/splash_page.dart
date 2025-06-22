@@ -18,9 +18,9 @@ class _SplashPageState extends State<SplashPage> {
       final bool isLoggedIn = true; // TODO: 로그인 상태 확인 로직으로 바꿔야함
 
       if (isLoggedIn) {
-        context.goNamed('home'); // 홈 라우트 이름
+        context.pushNamed('home'); // 홈 라우트 이름
       } else {
-        context.goNamed('authSelection');
+        context.pushNamed('authSelection');
       }
     });
   }
