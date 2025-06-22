@@ -59,6 +59,7 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
     }
   }
 
+  //서버에서 받은 메시지를 JSON으로 파싱하고 SensorData로 변환
   void handleWebSocketMessage(String message) {
     try {
       final Map<String, dynamic> json = jsonDecode(message);

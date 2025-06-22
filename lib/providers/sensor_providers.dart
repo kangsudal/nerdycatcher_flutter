@@ -9,6 +9,7 @@ const String webSocketUrl = "wss://nerdycatcher-server.onrender.com/";
 
 // 1. WebSocket 리포지토리 프로바이더
 // 앱이 시작될 때 한 번만 생성되고 앱 전체에서 공유됩니다.
+// WebSocket 객체를 앱 전체에서 공유하게 해줌.
 final webSocketRepositoryProvider = Provider<WebSocketRepository>((ref) {
   // 개발/테스트 시 실제 서버 연결이 어려울 경우 DummyWebSocketRepository 사용
   // final repository = DummyWebSocketRepository();
@@ -24,6 +25,7 @@ final webSocketRepositoryProvider = Provider<WebSocketRepository>((ref) {
 
 // 2. 전체 센서 데이터 스트림 프로바이더
 // 리포지토리에서 제공하는 SensorData 스트림을 listen합니다.
+// WebSocket에서 들어오는 SensorData 스트림을 연결
 final sensorDataStreamProvider = StreamProvider<SensorData>((ref) {
   final repository = ref.watch(webSocketRepositoryProvider);
   return repository.sensorDataStream;
@@ -73,7 +75,7 @@ abstract class BaseChartDataNotifier extends Notifier<List<FlSpot>> {
     return [];
   }
 
-  // 데이터 추가 로직은 동일하므로 여기에 정의
+  // 센서 값이 들어올 때마다 이 함수를 통해 FlSpot을 만들어 저장.
   void add(double value, DateTime timestamp) {
     final newSpot = FlSpot(timestamp.millisecondsSinceEpoch.toDouble(), value);
 
@@ -108,16 +110,28 @@ class TemperatureChartDataNotifier extends BaseChartDataNotifier {
 
   @override
   void listenToStream(Ref ref) {
+    // ref.listen은 첫번째 매개변수 (temperatureStreamProvider)를 감시하고 변화가 생길 때마다 반응
+    // <AsyncValue<double>>는 이 스트림이 온도 값(double)을 비동기 상태로 감싸고 있음을 의미
     ref.listen<AsyncValue<double>>(temperatureStreamProvider, (previous, next) {
       next.whenData((dataValue) {
         final currentSensorData = ref.read(sensorDataStreamProvider).value;
+        // temperatureStreamProvider는 double 값만 갖고 있어서 timestamp는 없기 때문에,
+        // 전체 센서 데이터 (SensorData) 중에서 타임스탬프 정보를 가져오기 위한 코드
+        // 실제 타임스탬프는 sensorDataStreamProvider에서 꺼내옴
         if (currentSensorData != null) {
           add(dataValue, currentSensorData.timestamp);
+          // 아주 드문 비동기 타이밍 어긋남
+          // 센서값만 존재 -> 현재 시간 기준 FlSpot 생성
         } else {
           add(dataValue, DateTime.now());
+          // 온도값(dataValue)과 해당 시점의 시간(timestamp)을 add() 함수에 전달해서
+          // FlSpot(x: timestamp, y: 온도) 형태로 차트에 찍히게 돼.
         }
       });
     });
+    // 온도값은 temperatureStreamProvider에서,
+    // 시간값은 sensorDataStreamProvider에서 따로 가져와서
+    // “27도, 오전 10시” 이런 식으로 차트에 넣는 거
   }
 }
 

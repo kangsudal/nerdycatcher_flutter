@@ -11,6 +11,29 @@ class NotificationSettingPage extends StatefulWidget {
 }
 
 class _NotificationSettingPageState extends State<NotificationSettingPage> {
+  // plant_id는 임시로 1 고정
+  final int plantId = 1;
+
+  // 각 항목 컨트롤러
+  final temperatureMaxController = TextEditingController();
+  final temperatureMinController = TextEditingController();
+  final humidityMaxController = TextEditingController();
+  final humidityMinController = TextEditingController();
+  final lightMaxController = TextEditingController();
+  final lightMinController = TextEditingController();
+
+  @override
+  void dispose() {
+    // 컨트롤러 정리
+    temperatureMaxController.dispose();
+    temperatureMinController.dispose();
+    humidityMaxController.dispose();
+    humidityMinController.dispose();
+    lightMaxController.dispose();
+    lightMinController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,14 +82,20 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
                   SettingNotificationCard(
                     iconPath: 'assets/icons/temperature.png',
                     conditionLabel: '온도',
+                    maxController: temperatureMaxController,
+                    minController: temperatureMinController,
                   ),
                   SettingNotificationCard(
                     iconPath: 'assets/icons/humidity.png',
                     conditionLabel: '습도',
+                    maxController: humidityMaxController,
+                    minController: humidityMinController,
                   ),
                   SettingNotificationCard(
                     iconPath: 'assets/icons/light.png',
                     conditionLabel: '조도',
+                    maxController: lightMaxController,
+                    minController: lightMinController,
                   ),
                   SizedBox(
                     width: double.infinity,
@@ -86,7 +115,7 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
   }
 }
 
-class SettingNotificationCard extends StatelessWidget {
+class SettingNotificationCard extends StatefulWidget {
   final String iconPath;
 
   final String conditionLabel;
@@ -94,14 +123,25 @@ class SettingNotificationCard extends StatelessWidget {
   final double? width;
   final double? height;
 
+  final TextEditingController maxController;
+  final TextEditingController minController;
+
   const SettingNotificationCard({
     super.key,
     required this.iconPath,
     required this.conditionLabel,
     this.width,
     this.height,
+    required this.maxController,
+    required this.minController,
   });
 
+  @override
+  State<SettingNotificationCard> createState() =>
+      _SettingNotificationCardState();
+}
+
+class _SettingNotificationCardState extends State<SettingNotificationCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -125,10 +165,14 @@ class SettingNotificationCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Image.asset(iconPath, fit: BoxFit.contain, width: width),
+              Image.asset(
+                widget.iconPath,
+                fit: BoxFit.contain,
+                width: widget.width,
+              ),
               SizedBox(width: 5),
               Text(
-                conditionLabel,
+                widget.conditionLabel,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
@@ -136,11 +180,12 @@ class SettingNotificationCard extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: TextFormField(
+              controller: widget.maxController,
               decoration: InputDecoration(
                 labelText: '이상',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '값을 입력하세요';
@@ -153,11 +198,12 @@ class SettingNotificationCard extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 10),
             child: TextFormField(
+              controller: widget.minController,
               decoration: InputDecoration(
                 labelText: '이하',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return '값을 입력하세요';
