@@ -55,7 +55,7 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
           children: [
             TextField(
               controller: nameController,
-              decoration: InputDecoration(labelText: '작물 이름'),
+              decoration: InputDecoration(labelText: '작물 종류 코드'),
             ),
             SizedBox(height: 10),
             Text('이미지를 선택하세요:'),
@@ -104,17 +104,56 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
                     .replaceAll(' ', '_');
                 // 1. 식물 저장
                 final plantRepo = PlantRepository();
-                final plantId = await plantRepo.insertPlant(
-                  Plant(
-                    name: nameController.text,
-                    imagePath: selectedImage,
-                    varietyCode: generatedVarietyCode,
-                  ),
+                final exists = await plantRepo.checkIfVarietyCodeExists(
+                  generatedVarietyCode,
                 );
+                if (exists) {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (_) => AlertDialog(
+                          title: Text('중복된 코드'),
+                          content: Text('같은 작물 종류 코드가 이미 존재해요.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('확인'),
+                            ),
+                          ],
+                        ),
+                  );
+                  return;
+                }
+                int? plantId;
+                try {
+                  plantId = await plantRepo.insertPlant(
+                    Plant(
+                      name: nameController.text,
+                      imagePath: selectedImage,
+                      varietyCode: generatedVarietyCode,
+                    ),
+                  );
+                } catch (e) {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (_) => AlertDialog(
+                          title: Text('생성 실패'),
+                          content: Text('작물 등록에 실패하였습니다.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('확인'),
+                            ),
+                          ],
+                        ),
+                  );
+                  return;
+                }
 
                 // 2. 임계값 저장
                 final setting = ThresholdSetting(
-                  plantId: plantId,
+                  plantId: plantId!,
                   temperatureMin:
                       double.tryParse(temperatureMinController.text) ??
                       basilThreshold['temperatureMin']!,

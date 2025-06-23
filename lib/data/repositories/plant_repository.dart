@@ -35,4 +35,14 @@ class PlantRepository {
     if (data == null) return null;
     return Plant.fromMap(data);
   }
+
+  Future<bool> checkIfVarietyCodeExists(String varietyCode) async {
+    final response = await _client
+        .from('plants')
+        .select('id')
+        .eq('variety_code', varietyCode)
+        .limit(1); // 하나만 확인하면 됨
+
+    return response.isNotEmpty;
+  }
 }
