@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdycatcher_flutter/data/repositories/plant_repository.dart';
 import 'package:nerdycatcher_flutter/data/repositories/threshold_repository.dart';
@@ -14,6 +15,7 @@ class PlantCreatePage extends StatefulWidget {
 
 class _PlantCreatePageState extends State<PlantCreatePage> {
   final nameController = TextEditingController();
+  final varietyCodeController = TextEditingController();
   final temperatureMinController = TextEditingController();
   final temperatureMaxController = TextEditingController();
   final humidityMinController = TextEditingController();
@@ -36,6 +38,7 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
   @override
   void dispose() {
     nameController.dispose();
+    varietyCodeController.dispose();
     temperatureMinController.dispose();
     temperatureMaxController.dispose();
     humidityMinController.dispose();
@@ -52,9 +55,14 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
               controller: nameController,
+              decoration: InputDecoration(labelText: '작물 이름'),
+            ),
+            TextField(
+              controller: varietyCodeController,
               decoration: InputDecoration(labelText: '작물 종류 코드'),
             ),
             SizedBox(height: 10),
@@ -96,9 +104,9 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
               basilThreshold['lightMin'],
             ),
             SizedBox(height: 20),
-            ElevatedButton(
+            CupertinoButton(
               onPressed: () async {
-                final generatedVarietyCode = nameController.text
+                final generatedVarietyCode = varietyCodeController.text
                     .trim()
                     .toLowerCase()
                     .replaceAll(' ', '_');
@@ -182,9 +190,10 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
                   context,
                 ).showSnackBar(SnackBar(content: Text('작물이 추가되었습니다')));
 
-                context.pushNamed('notificationSetting');
+                context.pushNamed('dashboard', extra: plantId);
               },
-              child: Text('추가하기'),
+              child: Text('추가하기', style: TextStyle(color: Colors.white)),
+              color: Colors.black,
             ),
           ],
         ),
