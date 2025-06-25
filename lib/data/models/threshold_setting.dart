@@ -1,12 +1,12 @@
 class ThresholdSetting {
   final int? id; //nullable로 변경한 이유는 insert할 때 id를 모르고, Supabase가 자동 생성해 주기 때문
   final int plantId;
-  final double temperatureMin;
-  final double temperatureMax;
-  final double humidityMin;
-  final double humidityMax;
-  final double lightMin;
-  final double lightMax;
+  final double? temperatureMin;
+  final double? temperatureMax;
+  final double? humidityMin;
+  final double? humidityMax;
+  final double? lightMin;
+  final double? lightMax;
 
   ThresholdSetting({
     this.id,
