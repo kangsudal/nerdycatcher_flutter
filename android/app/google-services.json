@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "85643944632",
+    "project_id": "nerdycatcher",
+    "storage_bucket": "nerdycatcher.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85643944632:android:0ae1298231bd0c94234a4d",
+        "android_client_info": {
+          "package_name": "com.kangsudal.nerdycatcher_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlvs003frhoGOUSeHT8QR5ibeAz9dEVQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
