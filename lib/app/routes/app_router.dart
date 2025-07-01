@@ -1,5 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nerdycatcher_flutter/other/routes/route_names.dart';
+import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
 import 'package:nerdycatcher_flutter/pages/auth_selection_page.dart';
 import 'package:nerdycatcher_flutter/pages/dashboard_page.dart';
 import 'package:nerdycatcher_flutter/pages/home_page.dart';
@@ -8,7 +9,9 @@ import 'package:nerdycatcher_flutter/pages/plant_create_page.dart';
 import 'package:nerdycatcher_flutter/pages/signin_page.dart';
 import 'package:nerdycatcher_flutter/pages/splash_page.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GoRouter appRouter = GoRouter(
+  navigatorKey: navigatorKey,
   initialLocation: '/',
   routes: [
     GoRoute(
@@ -33,9 +36,9 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       name: RouteNames.dashboard,
-      path: '/dashboard',
+      path: '/dashboard/:plantId',
       builder: (context, state) {
-        final plantId = state.extra as int;
+        final plantId = int.parse(state.pathParameters['plantId']!);
         return DashboardPage(plantId: plantId);
       },
     ),

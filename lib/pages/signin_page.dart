@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:nerdycatcher_flutter/other/routes/route_names.dart';
+import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
 
 class SigninPage extends ConsumerStatefulWidget {
   const SigninPage({super.key});

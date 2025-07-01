@@ -95,7 +95,12 @@ class _HomePageState extends State<HomePage> {
                           for (final plant in plants)
                             GestureDetector(
                               onTap: () {
-                                context.pushNamed('dashboard', extra: plant.id);
+                                context.pushNamed(
+                                  'dashboard',
+                                  pathParameters: {
+                                    'plantId': plant.id.toString(),
+                                  },
+                                );
                               },
                               child: CustomCard(
                                 imagePath: plant.imagePath,

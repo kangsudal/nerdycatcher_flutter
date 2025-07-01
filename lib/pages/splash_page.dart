@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nerdycatcher_flutter/providers/fcm_provider.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  State<SplashPage> createState() => _SplashPageState();
+  ConsumerState<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 1)).then((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(fcmServiceProvider).requestPermission();
+      await ref.read(fcmServiceProvider).initializeListeners();
+
+      final bool isLoggedIn = true; // TODO: 로그인 상태 확인 로직으로 바꾸기
+
       if (!mounted) return;
-      final bool isLoggedIn = true; // TODO: 로그인 상태 확인 로직으로 바꿔야함
 
       if (isLoggedIn) {
-        context.pushNamed('home'); // 홈 라우트 이름
+        context.pushNamed('home');
       } else {
         context.pushNamed('authSelection');
       }
