@@ -40,7 +40,7 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
       _channel = WebSocketChannel.connect(Uri.parse(url));
 
       final fcmToken = await fcmService.getFcmToken();
-      final name = 'Flutter App - ${fcmToken?.substring(0, 8) ?? 'unknown'}';
+      final name = 'Flutter App - ${fcmToken ?? 'unknown'}';
       _channel!.sink.add(jsonEncode({'type': 'identify', 'name': name}));
 
       _channel!.stream.listen(
