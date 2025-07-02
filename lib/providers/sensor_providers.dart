@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nerdycatcher_flutter/providers/fcm_provider.dart';
 import '../data/repositories/websocket_repository.dart'; // 수정: repositories 폴더로 경로 변경
 import '../data/models/sensor_data.dart'; // 수정: models 폴더로 경로 변경
 import 'package:fl_chart/fl_chart.dart'; // FlSpot 사용
@@ -13,9 +14,8 @@ const String webSocketUrl = "wss://nerdycatcher-server.onrender.com/";
 // 앱이 시작될 때 한 번만 생성되고 앱 전체에서 공유됩니다.
 // WebSocket 객체를 앱 전체에서 공유하게 해줌.
 final webSocketRepositoryProvider = Provider<WebSocketRepository>((ref) {
-  // 개발/테스트 시 실제 서버 연결이 어려울 경우 DummyWebSocketRepository 사용
-  // final repository = DummyWebSocketRepository();
-  final repository = NerdyCatcherSocketRepository(webSocketUrl);
+  final fcmService = ref.watch(fcmServiceProvider);
+  final repository = NerdyCatcherSocketRepository(webSocketUrl, fcmService);
 
   // 프로바이더가 dispose될 때 WebSocket 연결을 정리합니다.
   ref.onDispose(() => repository.dispose());
@@ -36,11 +36,11 @@ final sensorDataStreamProvider = StreamProvider.family<SensorData?, int>((
   return repository.sensorDataStream
       .where((data) => data.plantId == plantId)
       .timeout(
-    const Duration(seconds: 8),
-    onTimeout: (sink) {
-      sink.addError(TimeoutException('파수꾼 연결 안됨'));
-    },
-  );
+        const Duration(seconds: 8),
+        onTimeout: (sink) {
+          sink.addError(TimeoutException('파수꾼 연결 안됨'));
+        },
+      );
 });
 
 // 3. 각 센서 값 (온도, 습도, 조도) 스트림 프로바이더
@@ -178,7 +178,7 @@ class TemperatureChartDataNotifier extends BaseChartDataNotifier {
 
 // 습도 차트 데이터 Notifier
 final humidityChartDataProvider =
-    NotifierProvider.family<HumidityChartDataNotifier, List<FlSpot>,int>(
+    NotifierProvider.family<HumidityChartDataNotifier, List<FlSpot>, int>(
       HumidityChartDataNotifier.new,
     );
 
@@ -195,9 +195,13 @@ class HumidityChartDataNotifier extends BaseChartDataNotifier {
 
   @override
   void listenToStream(int plantId) {
-    ref.listen<AsyncValue<double>>(humidityStreamProvider(plantId), (previous, next) {
+    ref.listen<AsyncValue<double>>(humidityStreamProvider(plantId), (
+      previous,
+      next,
+    ) {
       next.whenData((dataValue) {
-        final currentSensorData = ref.read(sensorDataStreamProvider(plantId)).value;
+        final currentSensorData =
+            ref.read(sensorDataStreamProvider(plantId)).value;
         if (currentSensorData != null) {
           add(dataValue, currentSensorData.timestamp);
         } else {
@@ -210,7 +214,7 @@ class HumidityChartDataNotifier extends BaseChartDataNotifier {
 
 // 조도 차트 데이터 Notifier
 final lightLevelChartDataProvider =
-    NotifierProvider.family<LightLevelChartDataNotifier, List<FlSpot>,int>(
+    NotifierProvider.family<LightLevelChartDataNotifier, List<FlSpot>, int>(
       LightLevelChartDataNotifier.new,
     );
 
@@ -227,9 +231,13 @@ class LightLevelChartDataNotifier extends BaseChartDataNotifier {
 
   @override
   void listenToStream(int plantId) {
-    ref.listen<AsyncValue<int>>(lightLevelStreamProvider(plantId), (previous, next) {
+    ref.listen<AsyncValue<int>>(lightLevelStreamProvider(plantId), (
+      previous,
+      next,
+    ) {
       next.whenData((dataValue) {
-        final currentSensorData = ref.read(sensorDataStreamProvider(plantId)).value;
+        final currentSensorData =
+            ref.read(sensorDataStreamProvider(plantId)).value;
         if (currentSensorData != null) {
           add(dataValue.toDouble(), currentSensorData.timestamp);
         } else {

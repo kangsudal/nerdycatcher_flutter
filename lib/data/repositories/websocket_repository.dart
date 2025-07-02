@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'dart:convert'; // JSON 파싱을 위해 필요
+import 'package:nerdycatcher_flutter/services/fcm_service.dart';
 import 'package:web_socket_channel/web_socket_channel.dart'; // WebSocket 통신 라이브러리
 import '../models/sensor_data.dart'; // SensorData 모델 임포트
 import 'dart:math'; // 더미 데이터 생성을 위해 임포트
@@ -16,16 +17,18 @@ abstract class WebSocketRepository {
 // 실제 WebSocket 통신을 구현하는 클래스
 class NerdyCatcherSocketRepository implements WebSocketRepository {
   final String url;
+  final FcmService fcmService;
+
   WebSocketChannel? _channel;
   final StreamController<SensorData> _controller =
       StreamController<SensorData>.broadcast();
   Timer? _reconnectTimer;
   static const Duration _reconnectInterval = Duration(seconds: 5); // 재연결 시도 간격
 
-  NerdyCatcherSocketRepository(this.url); // 생성자에서 URL을 받음
+  NerdyCatcherSocketRepository(this.url, this.fcmService); // 생성자에서 URL을 받음
 
   @override
-  void connect() {
+  Future<void> connect() async {
     if (_channel != null && _channel!.closeCode == null) {
       print('WebSocket is already connected.');
       return; // 이미 연결되어 있으면 다시 연결 시도하지 않음
@@ -36,9 +39,9 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
 
-      _channel!.sink.add(
-        jsonEncode({'type': 'identify', 'name': 'Flutter App'}),
-      );
+      final fcmToken = await fcmService.getFcmToken();
+      final name = 'Flutter App - ${fcmToken?.substring(0, 8) ?? 'unknown'}';
+      _channel!.sink.add(jsonEncode({'type': 'identify', 'name': name}));
 
       _channel!.stream.listen(
         (message) {
