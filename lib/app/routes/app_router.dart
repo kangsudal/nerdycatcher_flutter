@@ -7,6 +7,7 @@ import 'package:nerdycatcher_flutter/pages/home_page.dart';
 import 'package:nerdycatcher_flutter/pages/notification_setting_page.dart';
 import 'package:nerdycatcher_flutter/pages/plant_create_page.dart';
 import 'package:nerdycatcher_flutter/pages/signin_page.dart';
+import 'package:nerdycatcher_flutter/pages/signup_page.dart';
 import 'package:nerdycatcher_flutter/pages/splash_page.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -28,6 +29,11 @@ final GoRouter appRouter = GoRouter(
       name: RouteNames.signin,
       path: '/auth/signin',
       builder: (context, state) => SigninPage(),
+    ),
+    GoRoute(
+      name: RouteNames.signup,
+      path: '/auth/signup',
+      builder: (context, state) => SignupPage(),
     ),
     GoRoute(
       name: RouteNames.home,

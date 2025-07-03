@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
               future: PlantRepository().fetchPlants(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return Center(child: CircularProgressIndicator());
                 }
                 ;
                 if (snapshot.hasData && snapshot.data!.isEmpty) {

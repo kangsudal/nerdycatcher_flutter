@@ -4,15 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
 import 'package:nerdycatcher_flutter/pages/signin_viewmodel.dart';
+import 'package:nerdycatcher_flutter/pages/signup_viewmodel.dart';
 
-class SigninPage extends ConsumerStatefulWidget {
-  const SigninPage({super.key});
+class SignupPage extends ConsumerStatefulWidget {
+  const SignupPage({super.key});
 
   @override
-  ConsumerState<SigninPage> createState() => _SigninPageState();
+  ConsumerState<SignupPage> createState() => _SignupPageState();
 }
 
-class _SigninPageState extends ConsumerState<SigninPage> {
+class _SignupPageState extends ConsumerState<SignupPage> {
   String? email;
 
   String? password;
@@ -22,7 +23,6 @@ class _SigninPageState extends ConsumerState<SigninPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
@@ -33,7 +33,6 @@ class _SigninPageState extends ConsumerState<SigninPage> {
           child: Form(
             key: formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Spacer(),
@@ -42,11 +41,12 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                     fit: BoxFit.scaleDown,
                     child: Column(
                       children: [
+                        Image.asset('assets/images/nerdy.png', height: 100),
                         Text(
                           'Nerdy',
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
-                            fontSize: 60,
+                            fontSize: 30,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -54,7 +54,7 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                           'Catcher',
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
-                            fontSize: 60,
+                            fontSize: 30,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -105,45 +105,28 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                     password = value;
                   },
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () async {
-                        try {
-                          context.pushNamed(RouteNames.resetPassword);
-                        } catch (e) {
-                          debugPrint('tap');
-                        }
-                      },
-                      child: Text(
-                        '비밀번호 재설정하기',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
-                  ],
-                ),
+                SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: CupertinoButton(
                     color: Colors.black,
                     onPressed:
-                        ref.watch(signinViewmodelProvider).isLoading
+                        ref.watch(signupViewmodelProvider).isLoading
                             ? null
                             : () async {
-                              final signinViewmodel = ref.read(
-                                signinViewmodelProvider.notifier,
+                              final signupViewmodel = ref.read(
+                                signupViewmodelProvider.notifier,
                               );
                               final form = formKey.currentState;
                               if (form == null || !form.validate()) return;
                               form.save();
                               try {
-                                await signinViewmodel.signin(
+                                await signupViewmodel.signup(
                                   email: email!,
                                   password: password!,
                                 );
                                 if (context.mounted) {
-                                  context.goNamed(RouteNames.home);
+                                  context.goNamed(RouteNames.signin);
                                 }
                               } catch (e) {
                                 if (!context.mounted) return;
@@ -153,10 +136,10 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                               }
                             },
                     child:
-                        ref.watch(signinViewmodelProvider).isLoading
+                        ref.watch(signupViewmodelProvider).isLoading
                             ? const CupertinoActivityIndicator()
                             : Text(
-                              '로그인',
+                              '회원가입',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -167,7 +150,7 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('계정이 없으신가요? '),
+                    Text('계정이 있으신가요? '),
                     TextButton(
                       style: ButtonStyle(
                         padding: WidgetStateProperty.all<EdgeInsets>(
@@ -175,14 +158,14 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                         ),
                       ),
                       onPressed: () {
-                        context.pushNamed(RouteNames.signup);
+                        context.pushNamed(RouteNames.signin);
                       },
                       child: DecoratedBox(
                         decoration: const BoxDecoration(
                           border: Border(bottom: BorderSide()),
                         ),
                         child: Text(
-                          ' 회원가입 하기',
+                          ' 로그인 하기',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
