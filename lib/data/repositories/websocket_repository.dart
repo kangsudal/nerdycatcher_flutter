@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:convert'; // JSON 파싱을 위해 필요
 import 'package:nerdycatcher_flutter/services/fcm_service.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:web_socket_channel/web_socket_channel.dart'; // WebSocket 통신 라이브러리
 import '../models/sensor_data.dart'; // SensorData 모델 임포트
 import 'dart:math'; // 더미 데이터 생성을 위해 임포트
@@ -10,25 +12,43 @@ import 'dart:math'; // 더미 데이터 생성을 위해 임포트
 // 모든 WebSocket 관련 로직을 캡슐화하는 추상 클래스
 abstract class WebSocketRepository {
   Stream<SensorData> get sensorDataStream;
+
   void connect();
+
   void dispose();
 }
 
 // 실제 WebSocket 통신을 구현하는 클래스
 class NerdyCatcherSocketRepository implements WebSocketRepository {
   final String url;
-  final FcmService fcmService;
 
   WebSocketChannel? _channel;
   final StreamController<SensorData> _controller =
       StreamController<SensorData>.broadcast();
+
+  // --- 인증 상태를 관리하기 위한 스트림 추가 ---
+  final BehaviorSubject<bool> _authStatus = BehaviorSubject.seeded(false);
+
+  Stream<bool> get authStatusStream => _authStatus.stream;
+
+  bool get isAuthenticated => _authStatus.value;
+
   Timer? _reconnectTimer;
   static const Duration _reconnectInterval = Duration(seconds: 5); // 재연결 시도 간격
 
-  NerdyCatcherSocketRepository(this.url, this.fcmService); // 생성자에서 URL을 받음
+  NerdyCatcherSocketRepository(this.url); // 생성자에서 URL을 받음
 
   @override
   Future<void> connect() async {
+    // 현재 로그인 세션에서 Access Token을 가져옵니다.
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken;
+
+    if (accessToken == null) {
+      print('❌ 로그인 상태가 아니므로 소켓에 연결할 수 없습니다.');
+      return;
+    }
+
     if (_channel != null && _channel!.closeCode == null) {
       print('WebSocket is already connected.');
       return; // 이미 연결되어 있으면 다시 연결 시도하지 않음
@@ -39,27 +59,43 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
     try {
       _channel = WebSocketChannel.connect(Uri.parse(url));
 
-      final fcmToken = await fcmService.getFcmToken();
-      final name = 'Flutter App - ${fcmToken ?? 'unknown'}';
-      _channel!.sink.add(jsonEncode({'type': 'identify', 'name': name}));
-
+      // 연결 후 인증 로직 실행
+      _authenticate();
       _channel!.stream.listen(
         (message) {
           handleWebSocketMessage(message);
         },
         onError: (error) {
           print('WebSocket Error: $error');
+          _authStatus.add(false); // 에러시 인증 해제
           _reconnect(); // 오류 발생 시 재연결 시도
         },
         onDone: () {
           print('WebSocket disconnected. Attempting to reconnect...');
+          _authStatus.add(false); // 연결 종료 시 인증 해제
           _reconnect(); // 연결 종료 시 재연결 시도
         },
       );
     } catch (e) {
       print('WebSocket connection initial failure: $e');
+      _authStatus.add(false);
       _reconnect(); // 초기 연결 실패 시 재연결 시도
     }
+  }
+
+  // 인증 로직을 별도 메서드로 분리
+  Future<void> _authenticate() async {
+    final accessToken =
+        Supabase.instance.client.auth.currentSession?.accessToken;
+    if (accessToken == null) {
+      print('❌ 로그인 토큰이 없어 인증할 수 없습니다.');
+      _channel?.sink.close();
+      return;
+    }
+
+    final authMessage = {'type': 'auth', 'token': accessToken};
+    _channel!.sink.add(jsonEncode(authMessage));
+    print('🔐 인증 메시지 전송...');
   }
 
   //서버에서 받은 메시지를 JSON으로 파싱하고 SensorData로 변환
@@ -68,6 +104,12 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
       final Map<String, dynamic> json = jsonDecode(message);
 
       switch (json['type']) {
+        case 'auth_success':
+          print('✅ 웹소켓 인증 성공! 재연결 시도를 중단합니다.');
+          _authStatus.add(true);
+          // 👇 인증 성공 시, 재연결 타이머를 확실하게 중지합니다.
+          _reconnectTimer?.cancel();
+          break;
         case 'sensor_data':
           final data = json['data'];
           if (data != null) {
@@ -91,27 +133,14 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
 
   // 주기적으로 재연결을 시도하는 내부 메서드
   void _reconnect() {
-    // 연결이 완전히 끊겼을 때만 재연결 타이머 시작 (closeCode가 null이 아님)
-    if (_reconnectTimer == null || !_reconnectTimer!.isActive) {
-      // 이미 타이머가 돌고 있지 않을 때만
-      _reconnectTimer = Timer.periodic(_reconnectInterval, (timer) {
-        if (_channel == null || _channel!.closeCode != null) {
-          // 채널이 없거나 끊겨있을 때만
-          print('Reattempting WebSocket connection...');
-          connect(); // 연결 시도
-          if (_channel != null && _channel!.closeCode == null) {
-            // 연결 성공시
-            print('WebSocket reconnected successfully!');
-            timer.cancel(); // 타이머 중지
-            _reconnectTimer = null; // 타이머 참조 제거
-          }
-        } else {
-          // 이미 연결되었거나 연결 시도 중
-          timer.cancel();
-          _reconnectTimer = null;
-        }
-      });
-    }
+    // 이미 타이머가 돌고 있다면 새로 만들지 않습니다.
+    if (_reconnectTimer?.isActive ?? false) return;
+
+    _reconnectTimer = Timer.periodic(_reconnectInterval, (timer) {
+      print('Reattempting WebSocket connection...');
+      // 그냥 연결만 시도합니다. 성공 여부 판단은 다른 곳에서 합니다.
+      connect();
+    });
   }
 
   @override
@@ -120,6 +149,7 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
   @override
   void dispose() {
     _reconnectTimer?.cancel(); // 타이머 정리
+    _authStatus.close(); // 인증 해제
     _channel?.sink.close(); // WebSocket 연결 종료
     _controller.close(); // 스트림 컨트롤러 종료
     print('RealWebSocketRepository disposed.');

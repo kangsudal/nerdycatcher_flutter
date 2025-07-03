@@ -14,8 +14,7 @@ const String webSocketUrl = "wss://nerdycatcher-server.onrender.com/";
 // 앱이 시작될 때 한 번만 생성되고 앱 전체에서 공유됩니다.
 // WebSocket 객체를 앱 전체에서 공유하게 해줌.
 final webSocketRepositoryProvider = Provider<WebSocketRepository>((ref) {
-  final fcmService = ref.watch(fcmServiceProvider);
-  final repository = NerdyCatcherSocketRepository(webSocketUrl, fcmService);
+  final repository = NerdyCatcherSocketRepository(webSocketUrl);
 
   // 프로바이더가 dispose될 때 WebSocket 연결을 정리합니다.
   ref.onDispose(() => repository.dispose());
