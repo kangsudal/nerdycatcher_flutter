@@ -3,44 +3,73 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nerdycatcher_flutter/constants/app_constants.dart';
 import 'package:nerdycatcher_flutter/providers/fcm_provider.dart';
 import '../data/repositories/websocket_repository.dart'; // 수정: repositories 폴더로 경로 변경
 import '../data/models/sensor_data.dart'; // 수정: models 폴더로 경로 변경
 import 'package:fl_chart/fl_chart.dart'; // FlSpot 사용
 
-const String webSocketUrl = "wss://nerdycatcher-server.onrender.com/";
+class WebSocketManager extends AutoDisposeAsyncNotifier<void> {
+  // 실제 WebSocket 통신을 구현하는 객체 생성
+  final _repository = NerdyCatcherSocketRepository(AppConstants.webSocketUrl);
 
-// 1. WebSocket 리포지토리 프로바이더
-// 앱이 시작될 때 한 번만 생성되고 앱 전체에서 공유됩니다.
-// WebSocket 객체를 앱 전체에서 공유하게 해줌.
-final webSocketRepositoryProvider = Provider<WebSocketRepository>((ref) {
-  final repository = NerdyCatcherSocketRepository(webSocketUrl);
+  // '센서 데이터'가 흘러다닐 내부 통로를 만듭니다.
+  final _sensorDataController = StreamController<SensorData>.broadcast();
 
-  // 프로바이더가 dispose될 때 WebSocket 연결을 정리합니다.
-  ref.onDispose(() => repository.dispose());
+  // '센서 데이터'를 외부로 내보내는 방송 채널입니다.
+  Stream<SensorData> get sensorDataStream => _sensorDataController.stream;
 
-  // 앱 시작 시 WebSocket 연결 시도
-  repository.connect();
-  return repository;
-});
+  @override
+  FutureOr<void> build() {
+    // 이 Provider가 소멸될 때 모든 자원을 정리합니다.
+    ref.onDispose(() {
+      _repository.dispose();
+      _sensorDataController.close();
+    });
+  }
 
-// 2. 전체 센서 데이터 스트림 프로바이더
-// 리포지토리에서 제공하는 SensorData 스트림을 listen합니다.
+  // UI가 "연결해!"라고 명령하면 이 함수를 호출합니다.
+  Future<void> connect() async {
+    // 1. 상태를 '로딩 중'으로 변경합니다.
+    state = const AsyncValue.loading();
+    // 2. '요리사'에게 일을 시키고, 성공/실패 여부를 state에 자동으로 반영합니다.
+    state = await AsyncValue.guard(
+      () => _repository.connectAndListen(_sensorDataController),
+    );
+  }
+
+  // UI가 "연결 끊어!"라고 명령하면 이 함수를 호출합니다.
+  void disconnect() {
+    _repository.dispose();
+    state = const AsyncValue.data(null); // 상태를 초기화합니다.
+  }
+}
+
+// --- UI에 제공될 최종 Provider들 ---
+// WebSocket '매니저'를 제공하는 Provider
+final webSocketManagerProvider =
+    AsyncNotifierProvider.autoDispose<WebSocketManager, void>(
+      () => WebSocketManager(),
+    );
+
 // WebSocket에서 들어오는 SensorData 스트림을 연결
-final sensorDataStreamProvider = StreamProvider.family<SensorData?, int>((
-  ref,
-  plantId,
-) {
-  final repository = ref.watch(webSocketRepositoryProvider);
-  return repository.sensorDataStream
-      .where((data) => data.plantId == plantId)
-      .timeout(
-        const Duration(seconds: 8),
-        onTimeout: (sink) {
-          sink.addError(TimeoutException('파수꾼 연결 안됨'));
-        },
-      );
-});
+// '센서 데이터 스트림'을 plantId별로 필터링하여 제공
+final sensorDataStreamProvider = StreamProvider.autoDispose
+    .family<SensorData, int>((ref, plantId) {
+      // notifier를 통해 웹소켓에서 원본 센서 데이터를 가져옴
+      final stream =
+          ref.watch(webSocketManagerProvider.notifier).sensorDataStream;
+
+      // plantId가 일치하는 데이터만 필터링하여 UI에 전달합니다.
+      return stream
+          .where((data) => data.plantId == plantId)
+          .timeout(
+            const Duration(seconds: 8),
+            onTimeout: (sink) {
+              sink.addError(TimeoutException('파수꾼 연결 안됨'));
+            },
+          );
+    });
 
 // 3. 각 센서 값 (온도, 습도, 조도) 스트림 프로바이더
 // SensorData 스트림에서 필요한 값만 추출하여 제공합니다.
@@ -136,6 +165,7 @@ class TemperatureChartDataNotifier extends BaseChartDataNotifier {
   late int plantId;
 
   TemperatureChartDataNotifier();
+
   @override
   List<FlSpot> build(int plantId) {
     this.plantId = plantId;
@@ -219,6 +249,7 @@ final lightLevelChartDataProvider =
 
 class LightLevelChartDataNotifier extends BaseChartDataNotifier {
   late int plantId;
+
   @override
   List<FlSpot> build(int plantId) {
     this.plantId = plantId;

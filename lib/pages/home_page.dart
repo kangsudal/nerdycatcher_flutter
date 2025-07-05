@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/data/models/plant.dart';
 import 'package:nerdycatcher_flutter/data/repositories/plant_repository.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
+import 'package:nerdycatcher_flutter/providers/websocket_notifier.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
+    // notifier에게 소켓 연결 상태가 어떤지 확인"
+    final connectionState = ref.watch(webSocketNotifierProvider);
+    // 센서 데이터 좀 실시간 불러오도록"
+    final sensorData = ref.watch(sensorDataStreamProvider);
     return Scaffold(
       appBar: DefaultAppBar(hasBack: false),
       body: SingleChildScrollView(
