@@ -84,7 +84,7 @@ class _NotificationSettingPageState extends State<NotificationSettingPage> {
                         ),
                       ),
                       Spacer(),
-                      Text('plant_id: 1'),
+                      Text('plant_id: $plantId'),
                     ],
                   ),
                   SettingNotificationCard(

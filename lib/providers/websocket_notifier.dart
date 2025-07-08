@@ -74,7 +74,16 @@ final webSocketNotifierProvider =
     );
 
 // 2. 센서 데이터 스트림을 UI에 제공하는 Provider
-final sensorDataStreamProvider = StreamProvider.autoDispose<SensorData>((ref) {
-  // Notifier를 통해 센서 데이터 스트림을 가져옴
-  return ref.watch(webSocketNotifierProvider.notifier).sensorDataStream;
-});
+// final sensorDataStreamProvider = StreamProvider.autoDispose
+//     .family<SensorData, int>((ref, plantId) {
+//       final stream =
+//           ref.watch(webSocketNotifierProvider.notifier).sensorDataStream;
+//       stream.listen((data){
+//         debugPrint('전체 데이터 도착: plantId = ${data.plantId}');
+//       });
+//       // Notifier를 통해 센서 데이터 스트림을 가져옴
+//       return stream.where((data) {
+//         debugPrint('데이터 plantId: ${data.plantId}, 내가 원하는 plantId: $plantId');
+//         return data.plantId == plantId;
+//       });
+//     });

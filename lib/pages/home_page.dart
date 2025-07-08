@@ -5,6 +5,7 @@ import 'package:nerdycatcher_flutter/data/models/plant.dart';
 import 'package:nerdycatcher_flutter/data/repositories/plant_repository.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 import 'package:nerdycatcher_flutter/providers/websocket_notifier.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -16,10 +17,6 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
-    // notifier에게 소켓 연결 상태가 어떤지 확인"
-    final connectionState = ref.watch(webSocketNotifierProvider);
-    // 센서 데이터 좀 실시간 불러오도록"
-    final sensorData = ref.watch(sensorDataStreamProvider);
     return Scaffold(
       appBar: DefaultAppBar(hasBack: false),
       body: SingleChildScrollView(
@@ -34,7 +31,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 }
-                ;
+
                 if (snapshot.hasData && snapshot.data!.isEmpty) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -100,7 +97,45 @@ class _HomePageState extends ConsumerState<HomePage> {
                         children: [
                           for (final plant in plants)
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
+                                final isMember = await PlantRepository()
+                                    .checkIsMemberOf(plant.id!);
+                                if (!isMember) {
+                                  //멤버가 아니면 다이얼로그 띄우기
+                                  showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => AlertDialog(
+                                          title: Text('이 작물의 모니터링 멤버가 아니십니다.'),
+                                          content: Text(
+                                            '해당 작물을 모니터링 하는 멤버가 되시겠습니까?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () async {
+                                                await PlantRepository()
+                                                    .beMemberOf(plant.id!);
+                                                context.pushNamed(
+                                                  'dashboard',
+                                                  pathParameters: {
+                                                    'plantId':
+                                                        plant.id.toString(),
+                                                  },
+                                                );
+                                              },
+                                              child: Text('네'),
+                                            ),
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.pop(context),
+                                              child: Text('아니요'),
+                                            ),
+                                          ],
+                                        ),
+                                  );
+                                  return;
+                                }
+                                //멤버일 경우엔 바로 이동
                                 context.pushNamed(
                                   'dashboard',
                                   pathParameters: {

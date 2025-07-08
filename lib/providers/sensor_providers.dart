@@ -56,6 +56,7 @@ final webSocketManagerProvider =
 // '센서 데이터 스트림'을 plantId별로 필터링하여 제공
 final sensorDataStreamProvider = StreamProvider.autoDispose
     .family<SensorData, int>((ref, plantId) {
+      ref.keepAlive();
       // notifier를 통해 웹소켓에서 원본 센서 데이터를 가져옴
       final stream =
           ref.watch(webSocketManagerProvider.notifier).sensorDataStream;
@@ -64,7 +65,7 @@ final sensorDataStreamProvider = StreamProvider.autoDispose
       return stream
           .where((data) => data.plantId == plantId)
           .timeout(
-            const Duration(seconds: 8),
+            const Duration(seconds: 20),
             onTimeout: (sink) {
               sink.addError(TimeoutException('파수꾼 연결 안됨'));
             },
