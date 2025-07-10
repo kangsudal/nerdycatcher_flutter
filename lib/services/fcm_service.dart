@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/app/routes/app_router.dart';
@@ -64,6 +65,28 @@ class FcmService {
       }
       print('포그라운드 수신: ${message.notification?.title}');
       //연동하기-3 강의 11:34 참고하기
+
+      final context = navigatorKey.currentContext;
+      ScaffoldMessenger.of(context!).showSnackBar(
+        SnackBar(
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(message.notification!.title!,textAlign: TextAlign.left,),
+              Text(message.notification!.body!),
+            ],
+          ),
+          action: SnackBarAction(
+            label: '보기',
+            onPressed: () {
+              GoRouter.of(context).goNamed(
+                'dashboard',
+                pathParameters: {'plantId': message.data['plant_id']!},
+              );
+            },
+          ),
+        ),
+      );
     });
 
     // Background 수신
