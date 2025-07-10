@@ -73,7 +73,7 @@ class FcmService {
       if (context != null && deeplink != null) {
         GoRouter.of(context).goNamed(
           'dashboard',
-          pathParameters: {'plantId': message.data['plantId']!},
+          pathParameters: {'plantId': message.data['plant_id']!},
         );
       }
     });

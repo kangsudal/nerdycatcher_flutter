@@ -13,7 +13,11 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
           hasBack
               ? IconButton(
                 onPressed: () {
-                  context.pop();
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/home'); // 또는 context.goNamed('home')
+                  }
                 },
                 icon: Icon(Icons.arrow_back_ios_new),
               )
