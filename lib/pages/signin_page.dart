@@ -142,6 +142,22 @@ class _SigninPageState extends ConsumerState<SigninPage> {
                                   email: email!,
                                   password: password!,
                                 );
+                                final result = ref.read(
+                                  signinViewmodelProvider,
+                                );
+
+                                if (result.hasError) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('로그인 실패'),
+                                    ),
+                                  );
+
+                                  debugPrint('로그인 실패: ${result.error}');
+                                  return;
+                                }
+
+                                await signinViewmodel.ensureUserExists();
                                 if (context.mounted) {
                                   context.goNamed(RouteNames.home);
                                 }

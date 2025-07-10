@@ -25,7 +25,7 @@ class SigninViewModel extends AutoDisposeAsyncNotifier<void> {
         password: password,
       );
       final user = response.user;
-      if (user == null) {
+      if (response.session == null || user == null) {
         throw Exception('로그인 실패: 사용자 없음');
       }
 
@@ -54,7 +54,7 @@ class SigninViewModel extends AutoDisposeAsyncNotifier<void> {
       await Supabase.instance.client.from('users').insert({
         'id': user.id,
         'email': user.email,
-        'fcmToken': fcmToken,
+        'fcm_token': fcmToken,
         'nickname': nickname,
       });
     }

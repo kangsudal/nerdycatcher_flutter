@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nerdycatcher_flutter/providers/fcm_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignupViewModel extends AutoDisposeAsyncNotifier<void> {
@@ -15,16 +17,12 @@ class SignupViewModel extends AutoDisposeAsyncNotifier<void> {
       );
 
       final user = response.user;
-      if (user == null) {
-        throw Exception('회원가입에 실패하였습니다.');
-      }
+      try{
 
-      // public.users 테이블에 해당 유저 등록
-      await Supabase.instance.client.from('users').insert({
-        'id': user.id,
-        'email': email,
-        // 필요시 fcm_token이나 닉네임 등 추가 필드 여기에!
-      });
+      } catch (error) {
+        throw Exception(error);
+        debugPrint('error: $error');
+      }
     });
   }
 }
