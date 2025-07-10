@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
+import 'package:nerdycatcher_flutter/pages/signin_viewmodel.dart';
 
-class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
+class DefaultAppBar extends ConsumerStatefulWidget
+    implements PreferredSizeWidget {
   final bool hasBack;
 
   const DefaultAppBar({super.key, required this.hasBack});
 
   @override
+  ConsumerState<DefaultAppBar> createState() => _DefaultAppBarState();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+class _DefaultAppBarState extends ConsumerState<DefaultAppBar> {
+  @override
   Widget build(BuildContext context) {
+    final signinViewmodel = ref.read(signinViewmodelProvider.notifier);
     return AppBar(
       leading:
-          hasBack
+          widget.hasBack
               ? IconButton(
                 onPressed: () {
                   if (context.canPop()) {
@@ -24,7 +37,15 @@ class DefaultAppBar extends StatelessWidget implements PreferredSizeWidget {
               : SizedBox(),
       actions: [
         // IconButton(onPressed: () {}, icon: Icon(Icons.account_circle)),
-        IconButton(onPressed: () {}, icon: Icon(Icons.tune)),
+        IconButton(
+          onPressed: () {
+            signinViewmodel.signout();
+            if (context.mounted) {
+              context.goNamed(RouteNames.signin);
+            }
+          },
+          icon: Icon(Icons.tune),
+        ),
       ],
     );
   }

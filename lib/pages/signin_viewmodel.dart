@@ -59,6 +59,13 @@ class SigninViewModel extends AutoDisposeAsyncNotifier<void> {
       });
     }
   }
+
+  Future<void> signout() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      Supabase.instance.client.auth.signOut();
+    });
+  }
 }
 
 // 4. Provider 생성
