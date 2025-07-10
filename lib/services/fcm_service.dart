@@ -71,7 +71,10 @@ class FcmService {
       final context = navigatorKey.currentContext;
       final deeplink = message.data['deeplink'];
       if (context != null && deeplink != null) {
-        GoRouter.of(context).goNamed(deeplink);
+        GoRouter.of(context).goNamed(
+          'dashboard',
+          pathParameters: {'plantId': message.data['plantId']!},
+        );
       }
     });
 
@@ -81,7 +84,10 @@ class FcmService {
       final context = navigatorKey.currentContext;
       final deeplink = firstMessage.data['deeplink'];
       if (context != null && context.mounted && deeplink != null) {
-        GoRouter.of(context).go(deeplink);
+        GoRouter.of(context).goNamed(
+          'dashboard',
+          pathParameters: {'plantId': firstMessage.data['plantId']!},
+        );
       }
     }
 
@@ -99,9 +105,10 @@ class FcmService {
     final user = session?.user;
 
     if (user != null) {
-      await Supabase.instance.client.from('users').update({
-        'fcm_token': token,
-      }).eq('id', user.id);
+      await Supabase.instance.client
+          .from('users')
+          .update({'fcm_token': token})
+          .eq('id', user.id);
       print('FCM 토큰을 성공적으로 갱신했습니다.');
     }
   }
