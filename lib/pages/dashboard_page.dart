@@ -6,6 +6,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 import 'package:nerdycatcher_flutter/providers/sensor_providers.dart'; // providers 폴더 임포트
 import 'package:nerdycatcher_flutter/pages/widgets/sensor_line_chart.dart'; // widgets 폴더 임포트
@@ -72,7 +74,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        context.pushNamed(RouteNames.notificationSetting);
+                      },
                       icon: Icon(Icons.mark_email_unread_outlined),
                     ),
                   ],

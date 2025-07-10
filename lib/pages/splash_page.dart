@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,8 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void initState() {
     super.initState();
+    _initFcmPermission();
+    _updateFcmTokenIfNeeded();
     _redirect();
   }
 
@@ -101,12 +104,31 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       final fcmToken =
           await ref.read(fcmServiceProvider).getFcmToken(); // FCM 토큰 비동기로 얻기
       final nickname = user.email?.split('@').first ?? '익명'; // 기본 닉네임 처리 예시
-      await Supabase.instance.client.from('users').insert({
+      await Supabase.instance.client.from('users').upsert({
         'id': user.id,
         'email': user.email,
         'nickname': nickname,
         'fcm_token': fcmToken,
       });
+    }
+  }
+
+  Future<void> _initFcmPermission() async {
+    await ref.read(fcmServiceProvider).requestPermission();
+  }
+
+
+  Future<void> _updateFcmTokenIfNeeded() async {
+    final session = Supabase.instance.client.auth.currentSession;
+    final user = session?.user;
+
+    if (user != null) {
+      final token = await FirebaseMessaging.instance.getToken();
+      print('FCM 토큰: $token');
+
+      await Supabase.instance.client.from('users').update({
+        'fcm_token': token,
+      }).eq('id', user.id);
     }
   }
 }
