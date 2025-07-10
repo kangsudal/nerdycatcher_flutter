@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/app/routes/app_router.dart';
 import 'dart:io';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 /// FcmService는 반드시 [fcmServiceProvider]를 통해 주입받아야 합니다.
 /// 예: `ref.read(fcmServiceProvider)`
 
@@ -69,7 +71,7 @@ class FcmService {
       final context = navigatorKey.currentContext;
       final deeplink = message.data['deeplink'];
       if (context != null && deeplink != null) {
-        GoRouter.of(context).go(deeplink);
+        GoRouter.of(context).goNamed(deeplink);
       }
     });
 
@@ -88,7 +90,19 @@ class FcmService {
 
     _messaging.onTokenRefresh.listen((newToken) {
       print('새로운 FCM 토큰: $newToken');
-      // TODO: 서버로 갱신 전송
+      updateFcmTokenIfNeeded(newToken);
     });
+  }
+
+  Future<void> updateFcmTokenIfNeeded(String token) async {
+    final session = Supabase.instance.client.auth.currentSession;
+    final user = session?.user;
+
+    if (user != null) {
+      await Supabase.instance.client.from('users').update({
+        'fcm_token': token,
+      }).eq('id', user.id);
+      print('FCM 토큰을 성공적으로 갱신했습니다.');
+    }
   }
 }

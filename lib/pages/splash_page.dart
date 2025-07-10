@@ -22,7 +22,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   void initState() {
     super.initState();
     _initFcmPermission();
-    _updateFcmTokenIfNeeded();
+    initializeListeners();
     _redirect();
   }
 
@@ -117,18 +117,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     await ref.read(fcmServiceProvider).requestPermission();
   }
 
-
-  Future<void> _updateFcmTokenIfNeeded() async {
-    final session = Supabase.instance.client.auth.currentSession;
-    final user = session?.user;
-
-    if (user != null) {
-      final token = await FirebaseMessaging.instance.getToken();
-      print('FCM 토큰: $token');
-
-      await Supabase.instance.client.from('users').update({
-        'fcm_token': token,
-      }).eq('id', user.id);
-    }
+  Future<void> initializeListeners() async {
+    await ref.read(fcmServiceProvider).initializeListeners();
   }
 }
