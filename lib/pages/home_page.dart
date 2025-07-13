@@ -122,6 +122,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                         plant.id.toString(),
                                                   },
                                                 );
+                                                Navigator.pop(context);
                                               },
                                               child: Text('네'),
                                             ),
@@ -133,7 +134,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           ],
                                         ),
                                   );
-                                  context.pop();
                                   return;
                                 }
                                 //멤버일 경우엔 바로 이동
