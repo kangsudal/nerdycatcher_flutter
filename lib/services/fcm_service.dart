@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/app/routes/app_router.dart';
+import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -72,7 +73,7 @@ class FcmService {
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(message.notification!.title!,textAlign: TextAlign.left,),
+              Text(message.notification!.title!, textAlign: TextAlign.left),
               Text(message.notification!.body!),
             ],
           ),
@@ -80,7 +81,7 @@ class FcmService {
             label: '보기',
             onPressed: () {
               GoRouter.of(context).goNamed(
-                'dashboard',
+                RouteNames.dashboard,
                 pathParameters: {'plantId': message.data['plant_id']!},
               );
             },
@@ -93,11 +94,14 @@ class FcmService {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       final context = navigatorKey.currentContext;
       final deeplink = message.data['deeplink'];
-      if (context != null && deeplink != null) {
-        GoRouter.of(context).goNamed(
-          'dashboard',
-          pathParameters: {'plantId': message.data['plant_id']!},
-        );
+      final plantId = message.data['plantId'];
+      debugPrint('plantId:$plantId');
+      if (context != null && deeplink != null && plantId != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          GoRouter.of(
+            context,
+          ).goNamed(RouteNames.dashboard, pathParameters: {'plantId': plantId});
+        });
       }
     });
 
@@ -106,11 +110,16 @@ class FcmService {
     if (firstMessage != null) {
       final context = navigatorKey.currentContext;
       final deeplink = firstMessage.data['deeplink'];
-      if (context != null && context.mounted && deeplink != null) {
-        GoRouter.of(context).goNamed(
-          'dashboard',
-          pathParameters: {'plantId': firstMessage.data['plantId']!},
-        );
+      final plantId = firstMessage.data['plantId'];
+      if (context != null &&
+          context.mounted &&
+          deeplink != null &&
+          plantId != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          GoRouter.of(
+            context,
+          ).goNamed(RouteNames.dashboard, pathParameters: {'plantId': plantId});
+        });
       }
     }
 

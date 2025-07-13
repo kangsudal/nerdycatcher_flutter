@@ -133,6 +133,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           ],
                                         ),
                                   );
+                                  context.pop();
                                   return;
                                 }
                                 //멤버일 경우엔 바로 이동
