@@ -8,11 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nerdycatcher_flutter/app/routes/route_names.dart';
+import 'package:nerdycatcher_flutter/data/models/plant.dart';
 import 'package:nerdycatcher_flutter/pages/widgets/default_app_bar.dart';
 import 'package:nerdycatcher_flutter/providers/sensor_providers.dart'; // providers 폴더 임포트
 import 'package:nerdycatcher_flutter/pages/widgets/sensor_line_chart.dart'; // widgets 폴더 임포트
 import 'package:nerdycatcher_flutter/data/models/sensor_data.dart'; // models 폴더 임포트
-import 'package:intl/intl.dart'; // DateFormat 사용
+import 'package:intl/intl.dart';
+
+import '../providers/plant_repo_provider.dart'
+    show plantRepositoryProvider; // DateFormat 사용
 
 class DashboardPage extends ConsumerStatefulWidget {
   final int plantId;
@@ -55,101 +59,107 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       body: sensorDataAsync.when(
         data: (data) {
           // 데이터가 있을 때만 내용 표시
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
+          return FutureBuilder(
+            future: ref
+                .read(plantRepositoryProvider)
+                .fetchPlantById(widget.plantId),
+            builder: (BuildContext context, AsyncSnapshot<Plant?> snapshot) {
+              if (!snapshot.hasData || snapshot.data == null) {
+                return Center(child: Text('작물 정보를 불러올 수 없습니다.'));
+              }
+              final plant = snapshot.data!;
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.asset(
-                      'assets/images/sample_plants/basil.png',
-                      width: 90,
-                    ),
-                    Text(
-                      '바질',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 30,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        context.pushNamed(RouteNames.notificationSetting);
-                      },
-                      icon: Icon(Icons.mark_email_unread_outlined),
-                    ),
-                  ],
-                ),
-                _buildCurrentDataCard(context, data), // context 전달
-                const SizedBox(height: 20),
-                SensorLineChart(
-                  data: tempChartData,
-                  title: '온도 변화',
-                  unit: '°C',
-                  minY: 10,
-                  // 작물에 맞는 최소/최대값으로 조정
-                  maxY: 35,
-                  lineColor: Colors.redAccent,
-                ),
-                SensorLineChart(
-                  data: humidChartData,
-                  title: '습도 변화',
-                  unit: '%',
-                  minY: 30,
-                  // 작물에 맞는 최소/최대값으로 조정
-                  maxY: 90,
-                  lineColor: Colors.blueAccent,
-                ),
-                SensorLineChart(
-                  data: lightChartData,
-                  title: '조도 변화',
-                  unit: 'Lux',
-                  // 또는 'ADC Value'
-                  minY: 0,
-                  // 작물에 맞는 최소/최대값으로 조정
-                  maxY: 5000,
-                  lineColor: Colors.orangeAccent,
-                ),
-                // --- DLI (적산광량) 계산 및 표시 영역 (개념적) ---
-                // 실제 DLI 계산은 광센서의 ADC 값을 Lux 또는 PPFD로 변환 후,
-                // 이를 시간당 누적하는 복잡한 로직이 필요합니다.
-                // 여기서는 아이디어를 보여주는 자리입니다.
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '🌱 적산광량 (DLI) 계산 예정: 식물 생장에 필요한 누적 광량',
-                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text('조도가 낮을 시 LED 자동 켜기'),
-                    SizedBox(width: 8),
-                    SizedBox(
-                      width: 40,
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: CupertinoSwitch(
-                          value: true,
-                          onChanged: (value) {},
+                    Row(
+                      children: [
+                        Image.asset(plant.imagePath, width: 90),
+                        Text(
+                          plant.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30,
+                          ),
                         ),
+                        IconButton(
+                          onPressed: () {
+                            context.pushNamed(RouteNames.notificationSetting);
+                          },
+                          icon: Icon(Icons.mark_email_unread_outlined),
+                        ),
+                      ],
+                    ),
+                    _buildCurrentDataCard(context, data), // context 전달
+                    const SizedBox(height: 20),
+                    SensorLineChart(
+                      data: tempChartData,
+                      title: '온도 변화',
+                      unit: '°C',
+                      minY: 10,
+                      // 작물에 맞는 최소/최대값으로 조정
+                      maxY: 35,
+                      lineColor: Colors.redAccent,
+                    ),
+                    SensorLineChart(
+                      data: humidChartData,
+                      title: '습도 변화',
+                      unit: '%',
+                      minY: 30,
+                      // 작물에 맞는 최소/최대값으로 조정
+                      maxY: 90,
+                      lineColor: Colors.blueAccent,
+                    ),
+                    SensorLineChart(
+                      data: lightChartData,
+                      title: '조도 변화',
+                      unit: 'Lux',
+                      // 또는 'ADC Value'
+                      minY: 0,
+                      // 작물에 맞는 최소/최대값으로 조정
+                      maxY: 5000,
+                      lineColor: Colors.orangeAccent,
+                    ),
+                    // --- DLI (적산광량) 계산 및 표시 영역 (개념적) ---
+                    // 실제 DLI 계산은 광센서의 ADC 값을 Lux 또는 PPFD로 변환 후,
+                    // 이를 시간당 누적하는 복잡한 로직이 필요합니다.
+                    // 여기서는 아이디어를 보여주는 자리입니다.
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        '🌱 적산광량 (DLI) 계산 예정: 식물 생장에 필요한 누적 광량',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
                       ),
                     ),
+                    Row(
+                      children: [
+                        Text('LED ON/OFF'),
+                        SizedBox(width: 8),
+                        SizedBox(
+                          width: 40,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: CupertinoSwitch(
+                              value: true,
+                              onChanged: (value) {},
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 50),
                   ],
                 ),
-                SizedBox(height: 50),
-              ],
-            ),
+              );
+            },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) {
           if (err is TimeoutException) {
-            return Center(
-              child: Text('해당 파수꾼과 연결되지 않았습니다.($err)'),
-            );
+            return Center(child: Text('해당 파수꾼과 연결되지 않았습니다. 기기연결을 확인해주세요.'));
           }
           return Center(child: Text('❌ 알 수 없는 에러 발생: $err'));
         },
