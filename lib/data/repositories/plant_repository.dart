@@ -70,4 +70,23 @@ class PlantRepository {
 
     return response.isNotEmpty;
   }
+
+  Future<void> updateLEDStatus(int plantId, bool newState) async {
+    try {
+      final response = await _client
+          .from('plants')
+          .update({'led_status': newState})
+          .eq('id', plantId)
+          .select()
+          .maybeSingle();
+
+      if (response == null) {
+        print('❌ LED 상태 업데이트 실패: 응답이 null입니다');
+      } else {
+        print('✅ LED 상태 업데이트 성공: $response');
+      }
+    } catch (e) {
+      print('❌ 예외 발생: $e');
+    }
+  }
 }

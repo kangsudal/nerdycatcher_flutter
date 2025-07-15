@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:convert'; // JSON 파싱을 위해 필요
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nerdycatcher_flutter/constants/app_constants.dart';
 import 'package:nerdycatcher_flutter/services/fcm_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:web_socket_channel/web_socket_channel.dart'; // WebSocket 통신 라이브러리
@@ -72,6 +74,20 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
     print('서버에 인증 메시지를 보냈습니다.');
   }
 
+  Future<void> sendLEDControl(int plantId, String state) async {
+    if (_channel == null) {
+      debugPrint('[❌] WebSocket 채널이 연결되지 않았습니다. 제어 메시지 전송 실패');
+      return;
+    }
+    final controlMessage = {
+      'type': 'led_control',
+      'plant_id': plantId,
+      'state': state,
+    };
+    _channel!.sink.add(jsonEncode(controlMessage));
+    print('서버에 LED 제어 메시지를 보냈습니다.$state');
+  }
+
   //서버에서 받은 메시지를 JSON으로 파싱하고 SensorData로 변환
   void handleWebSocketMessage(
     String message,
@@ -114,3 +130,7 @@ class NerdyCatcherSocketRepository implements WebSocketRepository {
     _channel?.sink.close(); // WebSocket 연결 종료
   }
 }
+
+final nerdySocketRepositoryProvider = Provider<NerdyCatcherSocketRepository>((ref) {
+  return NerdyCatcherSocketRepository(AppConstants.webSocketUrl);
+});

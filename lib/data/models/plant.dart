@@ -6,6 +6,7 @@ class Plant {
   final DateTime? createdAt;
   final DateTime? deletedAt;
   final DateTime? updatedAt;
+  final bool ledStatus;
 
   Plant({
     this.id,
@@ -15,6 +16,7 @@ class Plant {
     this.createdAt,
     this.deletedAt,
     this.updatedAt,
+    required this.ledStatus,
   });
 
   factory Plant.fromMap(Map<String, dynamic> map) {
@@ -22,10 +24,15 @@ class Plant {
       id: map['id'] as int?,
       name: map['name'] as String,
       varietyCode: map['variety_code'],
-      imagePath: map['image_path'] ?? '', // null 방지
-      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : null,
-      updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at']) : null,
-      deletedAt: map['deleted_at'] != null ? DateTime.parse(map['deleted_at']) : null,
+      imagePath: map['image_path'] ?? '',
+      // null 방지
+      createdAt:
+          map['created_at'] != null ? DateTime.parse(map['created_at']) : null,
+      updatedAt:
+          map['updated_at'] != null ? DateTime.parse(map['updated_at']) : null,
+      deletedAt:
+          map['deleted_at'] != null ? DateTime.parse(map['deleted_at']) : null,
+      ledStatus: map['led_status'],
     );
   }
 
@@ -34,6 +41,7 @@ class Plant {
       'name': name,
       'variety_code': varietyCode,
       'image_path': imagePath,
+      'led_status': ledStatus,
     };
   }
 }

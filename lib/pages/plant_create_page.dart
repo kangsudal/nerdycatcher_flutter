@@ -202,6 +202,7 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
                           name: nameController.text,
                           imagePath: selectedImage,
                           varietyCode: generatedVarietyCode,
+                          ledStatus: false,
                         ),
                       );
                     } catch (e) {

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nerdycatcher_flutter/constants/app_constants.dart';
 import 'package:nerdycatcher_flutter/providers/fcm_provider.dart';
@@ -42,6 +43,10 @@ class WebSocketManager extends AutoDisposeAsyncNotifier<void> {
   void disconnect() {
     _repository.dispose();
     state = const AsyncValue.data(null); // 상태를 초기화합니다.
+  }
+
+  Future<void> sendLEDStatus(int plantId, String state) async {
+    await _repository.sendLEDControl(plantId, state);
   }
 }
 

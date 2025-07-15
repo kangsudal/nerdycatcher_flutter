@@ -1,5 +1,5 @@
 // lib/providers/websocket_notifier.dart
-
+/*
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,10 +8,8 @@ import 'package:nerdycatcher_flutter/data/models/sensor_data.dart';
 import 'package:nerdycatcher_flutter/data/repositories/websocket_repository.dart';
 import 'package:nerdycatcher_flutter/providers/sensor_providers.dart';
 
-class WebSocketNotifier extends AutoDisposeAsyncNotifier<void> {
-  final NerdyCatcherSocketRepository _repository = NerdyCatcherSocketRepository(
-    AppConstants.webSocketUrl,
-  );
+class WebSocketNotifier extends AsyncNotifier<void> {
+  late final NerdyCatcherSocketRepository _repository;
 
   // 센서 데이터 스트림을 관리할 컨트롤러
   final StreamController<SensorData> _sensorDataController =
@@ -24,6 +22,8 @@ class WebSocketNotifier extends AutoDisposeAsyncNotifier<void> {
 
   @override
   FutureOr<void> build() {
+
+    _repository = ref.read(nerdySocketRepositoryProvider);
     // Notifier가 소멸될 때 Repository도 함께 정리
     ref.onDispose(() {
       _reconnectTimer?.cancel();
@@ -65,11 +65,15 @@ class WebSocketNotifier extends AutoDisposeAsyncNotifier<void> {
       connect(); // 5초마다 다시 연결 시도
     });
   }
+
+  Future<void> sendLEDStatus(int plantId, String state) async {
+    await _repository.sendLEDControl(plantId, state);
+  }
 }
 
 // 1. 매니저(Notifier)를 UI에 제공하는 Provider
 final webSocketNotifierProvider =
-    AsyncNotifierProvider.autoDispose<WebSocketNotifier, void>(
+    AsyncNotifierProvider<WebSocketNotifier, void>(
       () => WebSocketNotifier(),
     );
 
@@ -87,3 +91,4 @@ final webSocketNotifierProvider =
 //         return data.plantId == plantId;
 //       });
 //     });
+*/

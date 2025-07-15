@@ -14,6 +14,7 @@ import 'package:nerdycatcher_flutter/providers/sensor_providers.dart'; // provid
 import 'package:nerdycatcher_flutter/pages/widgets/sensor_line_chart.dart'; // widgets 폴더 임포트
 import 'package:nerdycatcher_flutter/data/models/sensor_data.dart'; // models 폴더 임포트
 import 'package:intl/intl.dart';
+import 'package:nerdycatcher_flutter/providers/websocket_notifier.dart';
 
 import '../providers/plant_repo_provider.dart'
     show plantRepositoryProvider; // DateFormat 사용
@@ -28,14 +29,28 @@ class DashboardPage extends ConsumerStatefulWidget {
 }
 
 class _DashboardPageState extends ConsumerState<DashboardPage> {
+  bool ledState=false;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(webSocketManagerProvider.notifier).connect(); // context가 있다면
+      _connect();
+      _loadInitialLedState();
     });
   }
-
+  Future<void> _loadInitialLedState() async {
+    final plant = await ref.read(plantRepositoryProvider).fetchPlantById(widget.plantId);
+    if (plant != null) {
+      setState(() {
+        ledState = plant.ledStatus;
+      });
+    }
+  }
+  Future<void> _connect() async {
+    await ref.read(webSocketManagerProvider.notifier).connect(); // context가 있다면
+    debugPrint('aaa');
+  }
   @override
   Widget build(BuildContext context) {
     // 모든 센서 데이터를 하나의 AsyncValue로 감시
@@ -142,8 +157,23 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           child: FittedBox(
                             fit: BoxFit.contain,
                             child: CupertinoSwitch(
-                              value: true,
-                              onChanged: (value) {},
+                              value: ledState,
+                              onChanged: (value) async {
+                                debugPrint('value:$value');
+                                await ref
+                                    .read(webSocketManagerProvider.notifier)
+                                    .sendLEDStatus(
+                                      widget.plantId,
+                                      value ? 'on' : 'off',
+                                    );
+
+                                setState(() {
+                                  ledState = value;
+                                }); // 혹은 provider 리프레시
+                                await ref
+                                    .read(plantRepositoryProvider)
+                                    .updateLEDStatus(widget.plantId, value);
+                              },
                             ),
                           ),
                         ),
