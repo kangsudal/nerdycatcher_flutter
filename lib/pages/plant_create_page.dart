@@ -236,6 +236,8 @@ class _PlantCreatePageState extends State<PlantCreatePage> {
                     final thresholdRepo = ThresholdRepository();
                     await thresholdRepo.upsertThreshold(setting);
 
+                    //Threshold말고도 PlantRepository의 insertPlant로 저장도 추가해야함
+
                     if (!mounted) return;
                     ScaffoldMessenger.of(
                       context,

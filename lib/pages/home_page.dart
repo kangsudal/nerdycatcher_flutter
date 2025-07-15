@@ -66,7 +66,22 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 width: 60,
                               ),
                               onTap: () {
-                                context.pushNamed('plantCreate');
+                                showDialog(
+                                  context: context,
+                                  builder:
+                                      (_) => AlertDialog(
+                                        title: Text('서비스 준비중입니다.'),
+                                        content: Text('추가 ESP32 기기가 필요합니다.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed:
+                                                () => Navigator.pop(context),
+                                            child: Text('확인'),
+                                          ),
+                                        ],
+                                      ),
+                                );
+                                // context.pushNamed('plantCreate');
                               },
                             ),
                           ],
@@ -151,7 +166,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           GestureDetector(
                             onTap: () {
-                              context.pushNamed('plantCreate');
+                              // context.pushNamed('plantCreate');
+
+                              showDialog(
+                                context: context,
+                                builder:
+                                    (_) => AlertDialog(
+                                      title: Text('서비스 준비중입니다.'),
+                                      content: Text('추가 ESP32 기기가 필요합니다.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed:
+                                              () => Navigator.pop(context),
+                                          child: Text('확인'),
+                                        ),
+                                      ],
+                                    ),
+                              );
                             },
                             child: CustomCard(
                               imagePath: 'assets/images/planting.png',
